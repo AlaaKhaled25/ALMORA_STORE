@@ -1,45 +1,49 @@
-# AGENTS.md
+# Project: Single-store E-commerce (Cash on Delivery) + Admin Dashboard
 
-Guidance for agents working in this repository.
+## Source of truth
+- Read `docs/PRD.md` before ANY task. Section 0 of the PRD ("Confirmed MVP Decisions") overrides everything else in it.
+- Do NOT add features outside the MVP scope. If something is unclear, ask me before guessing.
 
-## Project
+## Stack
+- Next.js (App Router) + TypeScript + Tailwind CSS
+- Backend = Next.js API routes (`src/app/api/...`), deployed on Vercel
+- Database = Firebase Firestore (NOT SQL). Adapt the PRD data model to Firestore collections.
+- Admin login = Firebase Authentication
+- Server-side Firebase access uses `firebase-admin` (only inside API routes, never in browser code)
+- PWA support
+- UI language: Arabic, RTL layout. Currency: EGP.
 
-Single-store e-commerce platform (storefront + admin dashboard).
-Full requirements live in `docs/PRD.md`. Section 0 decisions override the PRD's open questions.
+## Project structure
+- `src/app/(store)/`  -> customer pages (products, cart, checkout, order tracking)
+- `src/app/admin/`    -> admin dashboard pages
+- `src/app/api/`      -> backend endpoints
+- `src/lib/`          -> firebase setup, helpers
+- `src/components/`   -> reusable UI parts
+- `docs/PRD.md`       -> requirements
 
-## Confirmed MVP decisions (see PRD section 0)
+## Working rules (I am a beginner)
+1. Build ONE small step at a time. When it works, STOP and wait for my review. Never start the next phase on your own.
+2. Keep code simple, with short comments. Prefer easy-to-read code over clever code. No unnecessary libraries.
+3. Before coding a step, list the files you will create or change.
+4. After each step tell me, in simple words: what you changed, how to run it, how to test it.
+5. Never hardcode secrets. Use `.env.local` for keys, make sure `.env.local` is in `.gitignore`, and tell me exactly what values I must add (and where to get them).
+6. Never trust the frontend: prices, totals, stock and admin permissions must be checked in the API (backend).
+7. Store prices as integers (piasters) or in a decimal-safe way, never floats.
+8. Order creation must be atomic: use a Firestore transaction to check stock, deduct stock, and create the order together. Protect against duplicate submissions.
+9. Orders keep a snapshot of product name/price at order time.
 
-- Storefront language: Arabic with full RTL support.
-- Currency: EGP.
-- No customer accounts in MVP. Guest checkout only; only the admin logs in.
-- Order tracking by non-guessable order number + phone number.
-- Single-level categories; each product belongs to exactly one category.
-- Stock is deducted atomically when an order is created, restored once if cancelled.
-- No notifications (order confirmation page only).
-- Single Admin role for MVP; more roles later.
-- Payment: Cash on Delivery only; orders start as Unpaid.
-- Shopping cart is kept in the browser (localStorage).
+## Git workflow (after EVERY finished step)
+1. Run the project and make sure it builds (`npm run build`) without errors.
+2. `git add .`
+3. `git commit -m "<short clear message, e.g. feat: add admin login>"`
+4. `git push`
+Never commit `.env.local` or any secret. If push fails, tell me the exact error instead of trying random fixes.
 
-## Tech stack
-
-- Next.js (App Router) + TypeScript + Tailwind CSS.
-- Firebase Firestore (NoSQL) for data, Firebase Authentication for admin login, Firebase Storage for product images.
-- Deployed on Vercel.
-- PWA support (manifest + service worker).
-
-## Conventions
-
-- Never commit secrets. All env files and Firebase service-account JSON files are gitignored.
-- Enforce authorization on the server (API routes / Firestore rules), never rely on the UI.
-- Use integer minor units (piastres) for money; never binary floating point.
-- Use Firestore transactions for order creation and inventory changes.
-
-## Commands
-
-_(Run these only once `package.json` exists.)_
-
-- Install deps: `npm install`
-- Dev server: `npm run dev`
-- Build: `npm run build`
-- Lint: `npm run lint`
-- Typecheck: `npm run typecheck`
+## Phases (do them in this order, one at a time)
+1. Setup + Firebase connection + admin login
+2. Categories and products management (admin)
+3. Storefront (products list, product details)
+4. Cart + checkout with Cash on Delivery
+5. Orders management (status changes) + stock handling
+6. Dashboard statistics
+7. PWA + deploy to Vercel
