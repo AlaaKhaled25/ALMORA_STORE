@@ -4,15 +4,26 @@ import type { Timestamp } from "firebase-admin/firestore";
 // Money is always an integer number of piastres (1 EGP = 100 piastres).
 // Firestore stores dates as Timestamp objects.
 
+export type CategoryStatus = "active" | "inactive";
+
+// Single-level category. Each product will belong to one category.
 export type Category = {
   id: string;
   name: string;
-  slug: string;
   description?: string;
-  imageUrl?: string;
-  isActive: boolean;
+  status: CategoryStatus;
   createdAt: Timestamp;
   updatedAt: Timestamp;
+};
+
+// Shape returned by the categories API (dates as milliseconds, or null).
+export type CategoryView = {
+  id: string;
+  name: string;
+  description: string;
+  status: CategoryStatus;
+  createdAt: number | null;
+  updatedAt: number | null;
 };
 
 export type Product = {
