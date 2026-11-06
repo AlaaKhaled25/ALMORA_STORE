@@ -26,19 +26,33 @@ export type CategoryView = {
   updatedAt: number | null;
 };
 
+export type ProductStatus = "active" | "archived";
+
+// A product belongs to exactly one category. No images yet.
 export type Product = {
   id: string;
   name: string;
-  slug: string;
-  description: string;
+  description?: string;
   price: number; // piastres
   stockQuantity: number; // never negative
   categoryId: string;
-  imageUrls: string[];
-  isActive: boolean;
+  status: ProductStatus;
   createdAt: Timestamp;
   updatedAt: Timestamp;
   archivedAt?: Timestamp;
+};
+
+// Shape returned by the products API. Price stays in piastres.
+export type ProductView = {
+  id: string;
+  name: string;
+  description: string;
+  price: number; // piastres
+  stockQuantity: number;
+  categoryId: string;
+  status: ProductStatus;
+  createdAt: number | null;
+  updatedAt: number | null;
 };
 
 // Items are stored inside the order document as a snapshot.

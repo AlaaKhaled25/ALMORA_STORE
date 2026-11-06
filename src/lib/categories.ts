@@ -110,3 +110,18 @@ export function toCategoryView(
     updatedAt: updatedAt?.toMillis?.() ?? null,
   };
 }
+
+// Read one category by document id (single-doc read, no index needed).
+export async function getCategoryById(categoryId: string): Promise<{
+  exists: boolean;
+  isActive: boolean;
+}> {
+  const snapshot = await categoriesRef().doc(categoryId).get();
+
+  if (!snapshot.exists) {
+    return { exists: false, isActive: false };
+  }
+
+  const data = snapshot.data() ?? {};
+  return { exists: true, isActive: data.status !== "inactive" };
+}
