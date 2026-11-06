@@ -59,10 +59,17 @@ export async function PATCH(request: Request, { params }: RouteParams) {
       price: validation.value.price,
       stockQuantity: validation.value.stockQuantity,
       categoryId: validation.value.categoryId,
+      images: validation.value.images,
       updatedAt: FieldValue.serverTimestamp(),
     });
 
     const status = current.status === "archived" ? "archived" : "active";
+
+    const currentImages = Array.isArray(current.images)
+      ? (current.images as { publicId?: unknown }[])
+          .map((image) => String(image.publicId ?? ""))
+          .filter(Boolean)
+      : [];
 
     await writeAuditLog({
       actor: session,
@@ -75,6 +82,7 @@ export async function PATCH(request: Request, { params }: RouteParams) {
         stockQuantity: Number(current.stockQuantity ?? 0),
         categoryId: String(current.categoryId ?? ""),
         status,
+        imagePublicIds: currentImages,
       },
       afterData: {
         name: validation.value.name,
@@ -82,6 +90,7 @@ export async function PATCH(request: Request, { params }: RouteParams) {
         stockQuantity: validation.value.stockQuantity,
         categoryId: validation.value.categoryId,
         status,
+        imagePublicIds: validation.value.images.map((image) => image.publicId),
       },
     });
 

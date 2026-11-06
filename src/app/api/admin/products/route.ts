@@ -71,6 +71,7 @@ export async function POST(request: Request) {
       stockQuantity: validation.value.stockQuantity,
       categoryId: validation.value.categoryId,
       status: "active",
+      images: validation.value.images,
       createdAt: FieldValue.serverTimestamp(),
       updatedAt: FieldValue.serverTimestamp(),
     });
@@ -86,6 +87,7 @@ export async function POST(request: Request) {
         stockQuantity: validation.value.stockQuantity,
         categoryId: validation.value.categoryId,
         status: "active",
+        imagePublicIds: validation.value.images.map((image) => image.publicId),
       },
     });
 

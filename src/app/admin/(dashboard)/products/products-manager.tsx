@@ -1,9 +1,27 @@
 "use client";
 
-import { useCallback, useEffect, useState, type FormEvent } from "react";
+import {
+  useCallback,
+  useEffect,
+  useRef,
+  useState,
+  type ChangeEvent,
+  type FormEvent,
+} from "react";
+import Image from "next/image";
 import { useRouter } from "next/navigation";
+import {
+  PRODUCT_IMAGES_MAX,
+  PRODUCT_IMAGE_MAX_BYTES,
+  PRODUCT_IMAGE_TYPES,
+} from "@/lib/constants";
 import { egpToPiastres, piastresToEgp } from "@/lib/money";
-import type { CategoryView, ProductStatus, ProductView } from "@/lib/types";
+import type {
+  CategoryView,
+  ProductImage,
+  ProductStatus,
+  ProductView,
+} from "@/lib/types";
 
 const fieldClass =
   "w-full rounded-lg border border-black/15 bg-transparent px-3 py-2 text-sm outline-none focus:border-foreground dark:border-white/20";
@@ -28,6 +46,17 @@ async function readErrorMessage(response: Response): Promise<string> {
 
 // Thrown when the API says the admin session is missing or expired.
 class UnauthorizedError extends Error {}
+
+// Client-side image checks for fast feedback. The server validates again on save.
+function getImageProblem(file: File): string | null {
+  if (!(PRODUCT_IMAGE_TYPES as readonly string[]).includes(file.type)) {
+    return "الصور المسموح بها هي JPG أو PNG أو WEBP فقط.";
+  }
+  if (file.size > PRODUCT_IMAGE_MAX_BYTES) {
+    return "حجم كل صورة يجب ألا يتجاوز 5 ميجابايت.";
+  }
+  return null;
+}
 
 // Pure data fetches: no React state here, so they are safe to start from an effect.
 async function fetchProducts(): Promise<ProductView[]> {
@@ -69,6 +98,12 @@ export default function ProductsManager() {
   const [saving, setSaving] = useState(false);
 
   const [statusChangingId, setStatusChangingId] = useState<string | null>(null);
+
+  const [images, setImages] = useState<ProductImage[]>([]);
+  const [originalImages, setOriginalImages] = useState<ProductImage[]>([]);
+  const [uploading, setUploading] = useState(false);
+  const [imageError, setImageError] = useState<string | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const [categoryFilter, setCategoryFilter] = useState("all");
   const [statusFilter, setStatusFilter] = useState<"all" | ProductStatus>("all");
@@ -133,6 +168,9 @@ export default function ProductsManager() {
     setCategoryId("");
     setEditingId(null);
     setFormError(null);
+    setImages([]);
+    setOriginalImages([]);
+    setImageError(null);
   }
 
   function startEdit(product: ProductView) {
@@ -144,16 +182,134 @@ export default function ProductsManager() {
     setCategoryId(product.categoryId);
     setFormError(null);
     setSuccessMessage(null);
+    setImages([...product.images]);
+    setOriginalImages([...product.images]);
+    setImageError(null);
   }
 
   function categoryName(id: string): string {
     return categories.find((category) => category.id === id)?.name ?? "غير معروف";
   }
 
+  function makeMainImage(publicId: string) {
+    setImages((current) => {
+      const chosen = current.find((image) => image.publicId === publicId);
+      if (!chosen) return current;
+      return [
+        chosen,
+        ...current.filter((image) => image.publicId !== publicId),
+      ];
+    });
+  }
+
+  function removeImage(publicId: string) {
+    setImages((current) =>
+      current.filter((image) => image.publicId !== publicId),
+    );
+  }
+
+  async function handleFiles(event: ChangeEvent<HTMLInputElement>) {
+    const files = Array.from(event.target.files ?? []);
+    event.target.value = "";
+    if (files.length === 0) return;
+
+    setImageError(null);
+
+    const remaining = PRODUCT_IMAGES_MAX - images.length;
+    if (remaining <= 0) {
+      setImageError(`يمكن إضافة ${PRODUCT_IMAGES_MAX} صور كحد أقصى.`);
+      return;
+    }
+
+    if (files.length > remaining) {
+      setImageError(`يمكن إضافة ${PRODUCT_IMAGES_MAX} صور كحد أقصى.`);
+    }
+
+    const accepted: File[] = [];
+    for (const file of files.slice(0, remaining)) {
+      const problem = getImageProblem(file);
+      if (problem) {
+        setImageError(problem);
+        continue;
+      }
+      accepted.push(file);
+    }
+
+    if (accepted.length === 0) return;
+
+    setUploading(true);
+
+    try {
+      // Ask our backend for signed upload data. The secret stays on the server.
+      const signatureResponse = await fetch(
+        "/api/admin/cloudinary/signature",
+        { method: "POST" },
+      );
+
+      if (signatureResponse.status === 401) {
+        router.replace("/admin/login");
+        return;
+      }
+      if (!signatureResponse.ok) {
+        throw new Error(await readErrorMessage(signatureResponse));
+      }
+
+      const signature = await signatureResponse.json();
+      const uploaded: ProductImage[] = [];
+
+      // Upload each file directly from the browser to Cloudinary.
+      for (const file of accepted) {
+        const formData = new FormData();
+        formData.append("file", file);
+        formData.append("api_key", signature.apiKey);
+        formData.append("timestamp", String(signature.timestamp));
+        formData.append("folder", signature.folder);
+        formData.append("allowed_formats", signature.allowedFormats);
+        formData.append("signature", signature.signature);
+
+        const cloudinaryResponse = await fetch(
+          `https://api.cloudinary.com/v1_1/${signature.cloudName}/image/upload`,
+          { method: "POST", body: formData },
+        );
+        const cloudinaryData = await cloudinaryResponse
+          .json()
+          .catch(() => null);
+
+        if (
+          !cloudinaryResponse.ok ||
+          typeof cloudinaryData?.secure_url !== "string" ||
+          typeof cloudinaryData?.public_id !== "string"
+        ) {
+          throw new Error("تعذر رفع إحدى الصور. حاول مرة أخرى.");
+        }
+
+        uploaded.push({
+          url: cloudinaryData.secure_url,
+          publicId: cloudinaryData.public_id,
+        });
+      }
+
+      setImages((current) =>
+        [...current, ...uploaded].slice(0, PRODUCT_IMAGES_MAX),
+      );
+    } catch (error) {
+      setImageError(
+        error instanceof Error ? error.message : "تعذر رفع الصور.",
+      );
+    } finally {
+      setUploading(false);
+    }
+  }
+
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     setFormError(null);
     setSuccessMessage(null);
+
+    if (uploading) {
+      setFormError("انتظر حتى ينتهي رفع الصور.");
+      return;
+    }
 
     // Quick client hints. The server does the real validation.
     if (name.trim() === "") {
@@ -205,6 +361,7 @@ export default function ProductsManager() {
             price,
             stockQuantity,
             categoryId,
+            images,
           }),
         },
       );
@@ -217,11 +374,39 @@ export default function ProductsManager() {
         throw new Error(await readErrorMessage(response));
       }
 
+      // Images removed while editing are deleted from Cloudinary after saving.
+      const removedImages = editingId
+        ? originalImages.filter(
+            (original) =>
+              !images.some((image) => image.publicId === original.publicId),
+          )
+        : [];
+
       setSuccessMessage(
         editingId ? "تم تحديث المنتج بنجاح." : "تمت إضافة المنتج بنجاح.",
       );
       resetForm();
       await reloadData();
+
+      if (removedImages.length > 0) {
+        let deleteFailed = false;
+
+        for (const image of removedImages) {
+          const deleteResponse = await fetch("/api/admin/cloudinary/delete", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ publicId: image.publicId }),
+          });
+
+          if (!deleteResponse.ok) deleteFailed = true;
+        }
+
+        if (deleteFailed) {
+          setSuccessMessage(
+            "تم حفظ المنتج، لكن تعذر حذف بعض الصور من Cloudinary. يمكنك المحاولة لاحقًا.",
+          );
+        }
+      }
     } catch (error) {
       setFormError(
         error instanceof Error ? error.message : "تعذر حفظ المنتج.",
@@ -386,6 +571,90 @@ export default function ProductsManager() {
             ) : null}
           </label>
 
+          <div className="space-y-2 text-sm">
+            <span className="block font-medium">
+              صور المنتج (حتى 5 صور، JPG/PNG/WEBP، 5 ميجابايت لكل صورة)
+            </span>
+
+            <input
+              ref={fileInputRef}
+              type="file"
+              accept="image/jpeg,image/png,image/webp"
+              multiple
+              onChange={handleFiles}
+              disabled={uploading || images.length >= PRODUCT_IMAGES_MAX}
+              className="hidden"
+            />
+
+            <div className="flex items-center gap-3">
+              <button
+                type="button"
+                onClick={() => fileInputRef.current?.click()}
+                disabled={uploading || images.length >= PRODUCT_IMAGES_MAX}
+                className="rounded-lg border border-black/10 px-3 py-1.5 text-xs font-medium transition-colors hover:bg-black/5 disabled:opacity-60 dark:border-white/15 dark:hover:bg-white/10"
+              >
+                {uploading ? "جارٍ رفع الصور..." : "إضافة صور"}
+              </button>
+              <span className="text-xs text-zinc-600 dark:text-zinc-400">
+                {images.length} / {PRODUCT_IMAGES_MAX}
+              </span>
+            </div>
+
+            {images.length === 0 ? (
+              <p className="text-xs text-zinc-600 dark:text-zinc-400">
+                لم تُضف صور بعد. الصورة الأولى ستكون الصورة الرئيسية.
+              </p>
+            ) : (
+              <div className="grid grid-cols-2 gap-3">
+                {images.map((image, index) => (
+                  <div
+                    key={image.publicId}
+                    className="space-y-2 rounded-lg border border-black/10 p-2 dark:border-white/15"
+                  >
+                    <Image
+                      src={image.url}
+                      alt={`صورة المنتج ${index + 1}`}
+                      width={240}
+                      height={240}
+                      className="h-24 w-full rounded object-cover"
+                    />
+                    <div className="flex items-center justify-between gap-2 text-xs">
+                      {index === 0 ? (
+                        <span className="font-semibold text-green-700 dark:text-green-400">
+                          الصورة الرئيسية
+                        </span>
+                      ) : (
+                        <button
+                          type="button"
+                          onClick={() => makeMainImage(image.publicId)}
+                          className="rounded border border-black/10 px-2 py-1 font-medium hover:bg-black/5 dark:border-white/15 dark:hover:bg-white/10"
+                        >
+                          اجعلها رئيسية
+                        </button>
+                      )}
+                      <button
+                        type="button"
+                        onClick={() => removeImage(image.publicId)}
+                        className="rounded border border-red-200 px-2 py-1 font-medium text-red-700 hover:bg-red-50 dark:border-red-900 dark:text-red-300 dark:hover:bg-red-950/40"
+                      >
+                        حذف
+                      </button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+
+            {imageError ? (
+              <p
+                role="alert"
+                className="rounded-lg bg-red-50 px-3 py-2 text-sm text-red-700 dark:bg-red-950/40 dark:text-red-300"
+              >
+                {imageError}
+              </p>
+            ) : null}
+          </div>
+
           {formError ? (
             <p
               role="alert"
@@ -506,7 +775,24 @@ export default function ProductsManager() {
                     key={product.id}
                     className="border-b border-black/5 last:border-0 dark:border-white/10"
                   >
-                    <td className="p-2 font-medium">{product.name}</td>
+                    <td className="p-2">
+                      <div className="flex items-center gap-2">
+                        {product.images[0] ? (
+                          <Image
+                            src={product.images[0].url}
+                            alt={product.name}
+                            width={48}
+                            height={48}
+                            className="h-12 w-12 rounded object-cover"
+                          />
+                        ) : (
+                          <span className="flex h-12 w-12 items-center justify-center rounded bg-black/5 text-[10px] text-zinc-500 dark:bg-white/10">
+                            لا صورة
+                          </span>
+                        )}
+                        <span className="font-medium">{product.name}</span>
+                      </div>
+                    </td>
                     <td className="p-2 text-zinc-600 dark:text-zinc-400">
                       {categoryName(product.categoryId)}
                     </td>

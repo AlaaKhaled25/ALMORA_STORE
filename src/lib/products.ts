@@ -1,8 +1,13 @@
 import type { Timestamp } from "firebase-admin/firestore";
 import { getAdminDb } from "@/lib/firebase-admin";
 import type { ApiErrorDetail } from "@/lib/api-errors";
+import {
+  CLOUDINARY_FOLDER,
+  getCloudinaryCloudName,
+} from "@/lib/cloudinary";
+import { PRODUCT_IMAGES_MAX } from "@/lib/constants";
 import { egpToPiastres } from "@/lib/money";
-import type { ProductStatus, ProductView } from "@/lib/types";
+import type { ProductImage, ProductStatus, ProductView } from "@/lib/types";
 
 export const PRODUCTS_COLLECTION = "products";
 export const PRODUCT_NAME_MAX_LENGTH = 100;
@@ -18,7 +23,86 @@ export type ProductFields = {
   price: number; // piastres
   stockQuantity: number;
   categoryId: string;
+  images: ProductImage[];
 };
+
+// Images must be in our Cloudinary account and our product folder.
+function validateProductImages(
+  input: unknown,
+  details: ApiErrorDetail[],
+): ProductImage[] {
+  if (input === undefined || input === null) return [];
+
+  if (!Array.isArray(input)) {
+    details.push({ field: "images", message: "صيغة الصور غير صحيحة." });
+    return [];
+  }
+
+  if (input.length > PRODUCT_IMAGES_MAX) {
+    details.push({
+      field: "images",
+      message: `يمكن إضافة ${PRODUCT_IMAGES_MAX} صور كحد أقصى.`,
+    });
+  }
+
+  const cloudName = getCloudinaryCloudName();
+  const uploadPathPrefix = `/${cloudName}/image/upload/`;
+  const seenPublicIds = new Set<string>();
+  const images: ProductImage[] = [];
+
+  for (const raw of input) {
+    if (typeof raw !== "object" || raw === null) {
+      details.push({ field: "images", message: "صيغة إحدى الصور غير صحيحة." });
+      continue;
+    }
+
+    const item = raw as Record<string, unknown>;
+    const url = typeof item.url === "string" ? item.url.trim() : "";
+    const publicId =
+      typeof item.publicId === "string" ? item.publicId.trim() : "";
+
+    if (!url || !publicId) {
+      details.push({ field: "images", message: "بيانات إحدى الصور ناقصة." });
+      continue;
+    }
+
+    let parsedUrl: URL;
+    try {
+      parsedUrl = new URL(url);
+    } catch {
+      details.push({ field: "images", message: "رابط إحدى الصور غير صحيح." });
+      continue;
+    }
+
+    const belongsToOurAccount =
+      parsedUrl.protocol === "https:" &&
+      parsedUrl.hostname === "res.cloudinary.com" &&
+      parsedUrl.pathname.startsWith(uploadPathPrefix) &&
+      parsedUrl.pathname.includes(publicId);
+    const inOurFolder = publicId.startsWith(`${CLOUDINARY_FOLDER}/`);
+
+    if (!belongsToOurAccount || !inOurFolder) {
+      details.push({
+        field: "images",
+        message: "رابط الصورة غير صالح أو لا ينتمي إلى حساب Cloudinary الخاص بالمتجر.",
+      });
+      continue;
+    }
+
+    if (seenPublicIds.has(publicId)) {
+      details.push({
+        field: "images",
+        message: "لا يمكن استخدام نفس الصورة أكثر من مرة.",
+      });
+      continue;
+    }
+
+    seenPublicIds.add(publicId);
+    images.push({ url, publicId });
+  }
+
+  return images;
+}
 
 // Server-side validation for create and edit.
 export function validateProductFields(body: unknown): {
@@ -33,6 +117,7 @@ export function validateProductFields(body: unknown): {
     price: 0,
     stockQuantity: 0,
     categoryId: "",
+    images: [],
   };
 
   if (typeof body !== "object" || body === null) {
@@ -138,7 +223,25 @@ export function validateProductFields(body: unknown): {
     value.categoryId = input.categoryId.trim();
   }
 
+  // Images are optional, but every URL must belong to our Cloudinary account.
+  value.images = validateProductImages(input.images, details);
+
   return { ok: details.length === 0, value, details };
+}
+
+function toProductImages(value: unknown): ProductImage[] {
+  if (!Array.isArray(value)) return [];
+
+  return value
+    .filter(
+      (item): item is Record<string, unknown> =>
+        typeof item === "object" && item !== null,
+    )
+    .map((item) => ({
+      url: String(item.url ?? ""),
+      publicId: String(item.publicId ?? ""),
+    }))
+    .filter((image) => image.url !== "" && image.publicId !== "");
 }
 
 export function isValidProductStatus(value: unknown): value is ProductStatus {
@@ -161,6 +264,7 @@ export function toProductView(
     stockQuantity: Number(data.stockQuantity ?? 0),
     categoryId: String(data.categoryId ?? ""),
     status: data.status === "archived" ? "archived" : "active",
+    images: toProductImages(data.images),
     createdAt: createdAt?.toMillis?.() ?? null,
     updatedAt: updatedAt?.toMillis?.() ?? null,
   };

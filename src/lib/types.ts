@@ -28,7 +28,13 @@ export type CategoryView = {
 
 export type ProductStatus = "active" | "archived";
 
-// A product belongs to exactly one category. No images yet.
+// One Cloudinary image. The first item in the images array is the main image.
+export type ProductImage = {
+  url: string;
+  publicId: string;
+};
+
+// A product belongs to exactly one category.
 export type Product = {
   id: string;
   name: string;
@@ -37,6 +43,7 @@ export type Product = {
   stockQuantity: number; // never negative
   categoryId: string;
   status: ProductStatus;
+  images: ProductImage[];
   createdAt: Timestamp;
   updatedAt: Timestamp;
   archivedAt?: Timestamp;
@@ -51,6 +58,7 @@ export type ProductView = {
   stockQuantity: number;
   categoryId: string;
   status: ProductStatus;
+  images: ProductImage[];
   createdAt: number | null;
   updatedAt: number | null;
 };
