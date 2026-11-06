@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { getAdminAuth } from "@/lib/firebase-admin";
+import { logError } from "@/lib/log-error";
 import { isAdminEmail } from "@/lib/session";
 import { SESSION_COOKIE, SESSION_MAX_AGE_SECONDS } from "@/lib/constants";
 
@@ -63,7 +64,8 @@ export async function POST(request: Request) {
 
     return response;
   } catch (error) {
-    console.error("Failed to create admin session:", error);
+    // Log the real cause (code + message only, never the token).
+    logError("auth/session", error);
     return NextResponse.json(
       {
         error: {

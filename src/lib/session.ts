@@ -1,5 +1,6 @@
 import { cookies } from "next/headers";
 import { getAdminAuth } from "@/lib/firebase-admin";
+import { logError } from "@/lib/log-error";
 import { SESSION_COOKIE } from "@/lib/constants";
 
 export type AdminSession = {
@@ -32,7 +33,9 @@ export async function getAdminSession(): Promise<AdminSession | null> {
     );
     if (!isAdminEmail(decoded.email)) return null;
     return { uid: decoded.uid, email: decoded.email ?? null };
-  } catch {
+  } catch (error) {
+    // Invalid or expired cookie is normal; log only code + message.
+    logError("session.verifySessionCookie", error);
     return null;
   }
 }
