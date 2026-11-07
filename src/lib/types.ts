@@ -88,9 +88,8 @@ export type Order = {
   recipientName: string;
   recipientPhone: string;
   shippingAddress: {
+    city: string; // governorate / city
     addressLine: string;
-    city: string;
-    region: string;
     notes?: string;
   };
   items: OrderItem[]; // at least one item
@@ -105,6 +104,18 @@ export type Order = {
   createdAt: Timestamp;
   updatedAt: Timestamp;
   cancelledAt?: Timestamp;
+};
+
+// Every order status change gets its own document (never overwritten).
+export type OrderStatusHistory = {
+  id: string;
+  orderId: string;
+  orderNumber: string;
+  previousStatus: OrderStatus | null;
+  newStatus: OrderStatus;
+  changedByUserId: string | null;
+  reason?: string;
+  createdAt: Timestamp;
 };
 
 // Small counters collection, for example the next order number.

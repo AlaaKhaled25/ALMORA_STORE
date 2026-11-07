@@ -4,6 +4,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { connection } from "next/server";
+import AddToCartButton from "@/components/store/add-to-cart-button";
 import AvailabilityBadge from "@/components/store/availability-badge";
 import { piastresToEgp } from "@/lib/money";
 import { getStoreProductById } from "@/lib/store";
@@ -124,13 +125,11 @@ export default async function ProductPage({ params }: ProductPageProps) {
             {product.description || "لا يوجد وصف لهذا المنتج."}
           </p>
 
-          <button
-            type="button"
-            disabled
-            className="w-full rounded-full bg-zinc-200 px-6 py-3 font-medium text-zinc-500 dark:bg-zinc-800 dark:text-zinc-400"
-          >
-            أضف إلى السلة (قريبًا)
-          </button>
+          <AddToCartButton
+            productId={product.id}
+            price={product.price}
+            disabled={product.availability === "غير متوفر"}
+          />
 
           <p className="text-center text-xs text-zinc-500 dark:text-zinc-400">
             الدفع عند الاستلام.

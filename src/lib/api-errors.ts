@@ -9,6 +9,8 @@ export type ApiErrorCode =
   | "NOT_FOUND"
   | "CONFLICT"
   | "INSUFFICIENT_STOCK"
+  | "PRICE_CHANGED"
+  | "RATE_LIMITED"
   | "INTERNAL_ERROR";
 
 export type ApiErrorDetail = {
@@ -22,9 +24,12 @@ export function apiError(
   code: ApiErrorCode,
   message: string,
   details: ApiErrorDetail[] = [],
+  extra: Record<string, unknown> = {},
 ) {
   return NextResponse.json(
     {
+      // Extra public fields (for example new totals after a price change).
+      ...extra,
       error: {
         code,
         message,

@@ -1,4 +1,5 @@
 import type { Timestamp } from "firebase-admin/firestore";
+import { DELIVERY_FEE_PIASTRES } from "@/lib/constants";
 import { getAdminDb } from "@/lib/firebase-admin";
 
 // Public storefront data. Only active products in active categories are exposed.
@@ -35,7 +36,35 @@ export type StoreProductList = {
   totalPages: number;
 };
 
-function getAvailability(stockQuantity: number): StoreAvailability {
+export type StoreCartItem = {
+  productId: string;
+  quantity: number;
+};
+
+export type StoreCartValidationItem = {
+  productId: string;
+  quantity: number;
+  found: boolean;
+  name: string;
+  price: number; // piastres
+  imageUrl: string | null;
+  availability: StoreAvailability;
+  canFulfill: boolean;
+  message: string | null;
+};
+
+export type StoreCartValidation = {
+  items: StoreCartValidationItem[];
+  subtotal: number;
+  deliveryFee: number;
+  total: number;
+  itemCount: number;
+  hasIssues: boolean;
+};
+
+export function getStoreAvailability(
+  stockQuantity: number,
+): StoreAvailability {
   if (!Number.isFinite(stockQuantity) || stockQuantity <= 0) {
     return "غير متوفر";
   }
@@ -71,7 +100,7 @@ function toStoreProduct(
     name: String(data.name ?? ""),
     description: String(data.description ?? ""),
     price: Number(data.price ?? 0),
-    availability: getAvailability(Number(data.stockQuantity ?? 0)),
+    availability: getStoreAvailability(Number(data.stockQuantity ?? 0)),
     categoryId: category.id,
     categoryName: category.name,
     images: toPublicImages(data.images),
@@ -190,6 +219,97 @@ export async function getStoreProductById(
   if (!category) return null;
 
   return toStoreProduct(doc.id, data, category);
+}
+
+// Checks a browser cart against current products, prices and stock.
+// It returns only public data (no exact stock numbers, no internal image fields).
+export async function validateStoreCartItems(
+  items: StoreCartItem[],
+): Promise<StoreCartValidation> {
+  if (items.length === 0) {
+    return {
+      items: [],
+      subtotal: 0,
+      deliveryFee: 0,
+      total: 0,
+      itemCount: 0,
+      hasIssues: false,
+    };
+  }
+
+  const db = getAdminDb();
+  const productRefs = items.map((item) =>
+    db.collection("products").doc(item.productId),
+  );
+
+  const [categories, productDocs] = await Promise.all([
+    getStoreCategories(),
+    db.getAll(...productRefs),
+  ]);
+
+  const activeCategoryIds = new Set(categories.map((category) => category.id));
+  const results: StoreCartValidationItem[] = items.map((item, index) => {
+    const doc = productDocs[index];
+    const data = doc?.exists ? doc.data() ?? {} : null;
+    const name = data ? String(data.name ?? "") : "";
+    const isVisible =
+      !!data &&
+      data.status === "active" &&
+      activeCategoryIds.has(String(data.categoryId ?? ""));
+
+    if (!isVisible) {
+      return {
+        productId: item.productId,
+        quantity: item.quantity,
+        found: false,
+        name,
+        price: 0,
+        imageUrl: null,
+        availability: "غير متوفر",
+        canFulfill: false,
+        message: "هذا المنتج لم يعد متوفرًا.",
+      };
+    }
+
+    const price = Number(data.price ?? 0);
+    const stockQuantity = Number(data.stockQuantity ?? 0);
+    const availability = getStoreAvailability(stockQuantity);
+    const canFulfill = Number.isFinite(stockQuantity)
+      ? stockQuantity >= item.quantity
+      : false;
+
+    return {
+      productId: item.productId,
+      quantity: item.quantity,
+      found: true,
+      name,
+      price,
+      imageUrl: toPublicImages(data.images)[0]?.url ?? null,
+      availability,
+      canFulfill,
+      message: canFulfill
+        ? null
+        : availability === "غير متوفر"
+          ? "هذا المنتج غير متوفر حاليًا."
+          : "الكمية المطلوبة أكبر من المخزون المتاح.",
+    };
+  });
+
+  const subtotal = results.reduce(
+    (sum, item) => sum + (item.found ? item.price * item.quantity : 0),
+    0,
+  );
+  const deliveryFee = DELIVERY_FEE_PIASTRES;
+  const itemCount = results.reduce((sum, item) => sum + item.quantity, 0);
+
+  return {
+    items: results,
+    subtotal,
+    deliveryFee,
+    total: subtotal + deliveryFee,
+    itemCount,
+    hasIssues: results.some((item) => !item.canFulfill),
+  };
 }
 
 export function parseStoreSort(value: string | null | undefined): StoreSort {
