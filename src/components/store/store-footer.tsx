@@ -13,6 +13,9 @@ export default function StoreFooter() {
           <Link href="/products" className="hover:underline">
             كل المنتجات
           </Link>
+          <Link href="/track" className="hover:underline">
+            تتبع طلبك
+          </Link>
         </nav>
       </div>
     </footer>

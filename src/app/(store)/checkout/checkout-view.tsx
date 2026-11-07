@@ -18,6 +18,7 @@ import {
 } from "@/lib/cart";
 import { validateCheckoutCustomer } from "@/lib/checkout";
 import { DELIVERY_FEE_PIASTRES } from "@/lib/constants";
+import { saveLastOrderNumber } from "@/lib/last-order";
 import { piastresToEgp } from "@/lib/money";
 import type { OrderConfirmation } from "@/lib/orders";
 
@@ -186,6 +187,7 @@ export default function CheckoutView() {
       }
 
       setSuccess(order);
+      saveLastOrderNumber(order.orderNumber);
       clearCart();
     } catch {
       setSubmitError("تعذر إرسال الطلب. تحقق من اتصالك وحاول مرة أخرى.");
@@ -256,12 +258,20 @@ export default function CheckoutView() {
             </div>
           </div>
 
-          <Link
-            href="/products"
-            className="mt-6 inline-block rounded-full bg-foreground px-6 py-3 text-sm font-medium text-background"
-          >
-            متابعة التسوق
-          </Link>
+          <div className="mt-6 flex flex-wrap gap-3">
+            <Link
+              href="/track"
+              className="inline-block rounded-full bg-foreground px-6 py-3 text-sm font-medium text-background"
+            >
+              تتبع طلبك
+            </Link>
+            <Link
+              href="/products"
+              className="inline-block rounded-full border border-black/15 px-6 py-3 text-sm font-medium dark:border-white/20"
+            >
+              متابعة التسوق
+            </Link>
+          </div>
         </div>
       </div>
     );

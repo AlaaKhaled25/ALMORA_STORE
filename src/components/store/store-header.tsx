@@ -46,6 +46,12 @@ export default async function StoreHeader() {
           >
             كل المنتجات
           </Link>
+          <Link
+            href="/track"
+            className="shrink-0 rounded-full border border-black/10 px-3 py-1.5 font-medium hover:bg-black/5 dark:border-white/15 dark:hover:bg-white/10"
+          >
+            تتبع طلبك
+          </Link>
           {categories.map((category) => (
             <Link
               key={category.id}
