@@ -419,6 +419,7 @@ export async function createStoreOrder(
       paymentMethod: "COD",
       paymentStatus: "unpaid",
       orderStatus: "pending",
+      stockRestored: false,
       createdAt: now,
       updatedAt: now,
     };

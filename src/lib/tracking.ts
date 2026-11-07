@@ -146,6 +146,17 @@ export async function findTrackedOrder(
       const history = doc.data();
       if (!isOrderStatus(history.newStatus)) return null;
 
+      // Payment collection is an admin event, not a customer status step.
+      const previousStatus = isOrderStatus(history.previousStatus)
+        ? history.previousStatus
+        : null;
+      if (
+        history.action === "payment.collected" ||
+        previousStatus === history.newStatus
+      ) {
+        return null;
+      }
+
       return {
         status: history.newStatus,
         label: getOrderStatusLabel(history.newStatus),

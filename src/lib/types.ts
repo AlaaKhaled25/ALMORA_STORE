@@ -101,12 +101,20 @@ export type Order = {
   paymentStatus: PaymentStatus;
   orderStatus: OrderStatus;
   customerNotes?: string;
+  stockRestored?: boolean;
+  cancellationReason?: string;
   createdAt: Timestamp;
   updatedAt: Timestamp;
   cancelledAt?: Timestamp;
 };
 
+export type OrderHistoryAction =
+  | "status.change"
+  | "order.cancel"
+  | "payment.collected";
+
 // Every order status change gets its own document (never overwritten).
+// Payment collection is also recorded here as a payment-only event.
 export type OrderStatusHistory = {
   id: string;
   orderId: string;
@@ -114,6 +122,10 @@ export type OrderStatusHistory = {
   previousStatus: OrderStatus | null;
   newStatus: OrderStatus;
   changedByUserId: string | null;
+  changedByUserEmail?: string | null;
+  action?: OrderHistoryAction;
+  paymentStatusBefore?: PaymentStatus;
+  paymentStatusAfter?: PaymentStatus;
   reason?: string;
   createdAt: Timestamp;
 };
@@ -122,4 +134,49 @@ export type OrderStatusHistory = {
 export type Counter = {
   id: string; // e.g. "orders"
   value: number;
+};
+
+// Admin order list row. Dates are milliseconds for the UI.
+export type AdminOrderListItem = {
+  id: string;
+  orderNumber: string;
+  recipientName: string;
+  recipientPhone: string;
+  totalAmount: number;
+  currency: "EGP";
+  orderStatus: OrderStatus;
+  paymentStatus: PaymentStatus;
+  createdAt: number | null;
+};
+
+// One entry in the admin order timeline, including payment events.
+export type AdminOrderHistoryEntry = {
+  id: string;
+  action: OrderHistoryAction | null;
+  previousStatus: OrderStatus | null;
+  newStatus: OrderStatus;
+  changedByUserId: string | null;
+  changedByUserEmail: string | null;
+  paymentStatusBefore: PaymentStatus | null;
+  paymentStatusAfter: PaymentStatus | null;
+  reason: string;
+  createdAt: number | null;
+};
+
+// Full admin order details.
+export type AdminOrderDetails = AdminOrderListItem & {
+  shippingAddress: {
+    city: string;
+    addressLine: string;
+    notes: string;
+  };
+  items: OrderItem[];
+  subtotal: number;
+  deliveryFee: number;
+  paymentMethod: "COD";
+  stockRestored: boolean;
+  cancellationReason: string;
+  updatedAt: number | null;
+  cancelledAt: number | null;
+  history: AdminOrderHistoryEntry[];
 };

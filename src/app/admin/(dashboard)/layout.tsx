@@ -27,6 +27,9 @@ export default async function DashboardLayout({
           <Link href="/admin/products" className="hover:underline">
             المنتجات
           </Link>
+          <Link href="/admin/orders" className="hover:underline">
+            الطلبات
+          </Link>
         </nav>
         <LogoutButton />
       </header>
