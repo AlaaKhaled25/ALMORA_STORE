@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
+import { connection } from "next/server";
 import LogoutButton from "@/components/logout-button";
 import { getAdminSession } from "@/lib/session";
 
@@ -11,6 +12,9 @@ export default async function DashboardLayout({
 }: {
   children: React.ReactNode;
 }) {
+  // Admin data is always private and must be rendered per request.
+  await connection();
+
   const session = await getAdminSession();
   if (!session) redirect("/admin/login");
 
