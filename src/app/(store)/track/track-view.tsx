@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useSyncExternalStore, type FormEvent } from "react";
+import { CANCELLATION_CONTACT_MESSAGE } from "@/lib/cancellation";
 import {
   getLastOrderSnapshot,
   saveLastOrderNumber,
@@ -189,6 +190,23 @@ export default function TrackView() {
               </span>
             </div>
           </section>
+
+          {order.status === "cancelled" ? (
+            <section className="rounded-2xl border border-red-200 bg-red-50 p-5 text-red-800 dark:border-red-900 dark:bg-red-950/40 dark:text-red-200">
+              <h2 className="font-bold">
+                {order.cancellation ? "تم إلغاء طلبك" : "تم إلغاء الطلب"}
+              </h2>
+              {order.cancellation ? (
+                <div className="mt-2 space-y-1 text-sm">
+                  <p>السبب: {order.cancellation.reasonLabel}</p>
+                  {order.cancellation.note ? (
+                    <p>ملاحظات: {order.cancellation.note}</p>
+                  ) : null}
+                  <p>{CANCELLATION_CONTACT_MESSAGE}</p>
+                </div>
+              ) : null}
+            </section>
+          ) : null}
 
           <section className="rounded-2xl border border-black/10 p-5 dark:border-white/15">
             <h2 className="font-bold">حالة الطلب</h2>

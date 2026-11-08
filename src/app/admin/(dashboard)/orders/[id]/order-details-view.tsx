@@ -1,7 +1,17 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { useCallback, useEffect, useState } from "react";
+import {
+  useCallback,
+  useEffect,
+  useState,
+  type FormEvent,
+} from "react";
+import {
+  CANCELLATION_NOTE_MAX_LENGTH,
+  CANCELLATION_REASON_LABELS,
+  CANCELLATION_REASON_OPTIONS,
+} from "@/lib/cancellation";
 import { piastresToEgp } from "@/lib/money";
 import {
   canCancelOrder,
@@ -13,8 +23,12 @@ import {
 import type {
   AdminOrderDetails,
   AdminOrderHistoryEntry,
+  CancellationReasonCode,
   OrderStatus,
 } from "@/lib/types";
+
+const fieldClass =
+  "w-full rounded-lg border border-black/15 bg-transparent px-3 py-2 text-sm outline-none focus:border-foreground disabled:opacity-60 dark:border-white/20";
 
 const NEXT_ACTION_LABELS: Record<OrderStatus, string> = {
   pending: "قيد المراجعة",
@@ -114,6 +128,11 @@ export default function OrderDetailsView({
   >(null);
   const [actionError, setActionError] = useState<string | null>(null);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
+  const [showCancelForm, setShowCancelForm] = useState(false);
+  const [cancelReasonCode, setCancelReasonCode] = useState<
+    CancellationReasonCode | ""
+  >("");
+  const [cancelNote, setCancelNote] = useState("");
 
   const reloadData = useCallback(async () => {
     try {
@@ -171,7 +190,7 @@ export default function OrderDetailsView({
     body: Record<string, unknown>,
     busy: "status" | "cancel" | "payment",
     successText: string,
-  ) {
+  ): Promise<boolean> {
     setBusyAction(busy);
     setActionError(null);
     setSuccessMessage(null);
@@ -185,7 +204,7 @@ export default function OrderDetailsView({
 
       if (response.status === 401) {
         router.replace("/admin/login");
-        return;
+        return false;
       }
       if (!response.ok) {
         throw new Error(await readErrorMessage(response));
@@ -193,10 +212,12 @@ export default function OrderDetailsView({
 
       setSuccessMessage(successText);
       await reloadData();
+      return true;
     } catch (error) {
       setActionError(
         error instanceof Error ? error.message : "تعذر تنفيذ الإجراء.",
       );
+      return false;
     } finally {
       setBusyAction(null);
     }
@@ -218,30 +239,64 @@ export default function OrderDetailsView({
     );
   }
 
-  async function handleCancel() {
-    const reason = window.prompt("اكتب سبب الإلغاء (مطلوب):");
-    if (reason === null) return;
+  function openCancelForm() {
+    setActionError(null);
+    setSuccessMessage(null);
+    setShowCancelForm(true);
+  }
 
-    const trimmedReason = reason.trim();
-    if (trimmedReason === "") {
-      setActionError("سبب الإلغاء مطلوب.");
+  function closeCancelForm() {
+    setShowCancelForm(false);
+    setCancelReasonCode("");
+    setCancelNote("");
+    setActionError(null);
+  }
+
+  async function handleCancelSubmit(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+
+    if (cancelReasonCode === "") {
+      setActionError("اختر سبب الإلغاء.");
+      return;
+    }
+
+    const note = cancelNote.trim();
+    if (note.length > CANCELLATION_NOTE_MAX_LENGTH) {
+      setActionError(
+        `ملاحظة الإلغاء يجب ألا تتجاوز ${CANCELLATION_NOTE_MAX_LENGTH} حرف.`,
+      );
+      return;
+    }
+
+    if (cancelReasonCode === "other" && note === "") {
+      setActionError("اكتب ملاحظة توضح سبب الإلغاء.");
       return;
     }
 
     if (
       !window.confirm(
-        "هل تريد إلغاء هذا الطلب؟ سيتم إرجاع المخزون ولا يمكن التراجع.",
+        "هل تريد إلغاء هذا الطلب؟ سيظهر السبب للعميل، وسيتم إرجاع المخزون ولا يمكن التراجع.",
       )
     ) {
       return;
     }
 
-    await sendAction(
+    const succeeded = await sendAction(
       `/api/admin/orders/${orderId}/status`,
-      { status: "cancelled", reason: trimmedReason },
+      {
+        status: "cancelled",
+        cancellationReasonCode: cancelReasonCode,
+        cancellationNote: note,
+      },
       "cancel",
       "تم إلغاء الطلب وإرجاع المخزون.",
     );
+
+    if (succeeded) {
+      setShowCancelForm(false);
+      setCancelReasonCode("");
+      setCancelNote("");
+    }
   }
 
   async function handleCollectPayment() {
@@ -292,6 +347,9 @@ export default function OrderDetailsView({
     order.paymentStatus,
   );
   const hasActions = Boolean(nextStatus || cancellable || payable);
+  const cancellationReasonLabel = order.cancellationReasonCode
+    ? CANCELLATION_REASON_LABELS[order.cancellationReasonCode]
+    : order.cancellationReason;
 
   return (
     <div className="space-y-5">
@@ -332,7 +390,10 @@ export default function OrderDetailsView({
 
         {order.orderStatus === "cancelled" ? (
           <div className="mt-4 rounded-xl bg-red-50 p-3 text-sm text-red-700 dark:bg-red-950/40 dark:text-red-300">
-            <p>سبب الإلغاء: {order.cancellationReason || "غير مسجل"}</p>
+            <p>سبب الإلغاء: {cancellationReasonLabel || "غير مسجل"}</p>
+            {order.cancellationNote ? (
+              <p>ملاحظة للعميل: {order.cancellationNote}</p>
+            ) : null}
             <p>
               المخزون:{" "}
               {order.stockRestored
@@ -362,46 +423,115 @@ export default function OrderDetailsView({
         ) : null}
 
         {hasActions ? (
-          <div className="mt-4 flex flex-wrap gap-2">
-            {nextStatus ? (
-              <button
-                type="button"
-                onClick={() => void handleNextStatus(nextStatus)}
-                disabled={busyAction !== null}
-                className="rounded-lg bg-foreground px-4 py-2 text-sm font-medium text-background transition-opacity hover:opacity-90 disabled:opacity-60"
-              >
-                {busyAction === "status"
-                  ? "جارٍ التنفيذ..."
-                  : NEXT_ACTION_LABELS[nextStatus]}
-              </button>
-            ) : null}
+          showCancelForm && cancellable ? (
+            <form
+              onSubmit={handleCancelSubmit}
+              className="mt-4 space-y-3 rounded-xl border border-red-200 p-4 dark:border-red-900"
+            >
+              <label className="block space-y-1 text-sm">
+                <span className="font-medium">سبب الإلغاء</span>
+                <select
+                  value={cancelReasonCode}
+                  onChange={(event) =>
+                    setCancelReasonCode(
+                      event.target.value as CancellationReasonCode | "",
+                    )
+                  }
+                  disabled={busyAction !== null}
+                  className={fieldClass}
+                >
+                  <option value="">اختر سبب الإلغاء</option>
+                  {CANCELLATION_REASON_OPTIONS.map((option) => (
+                    <option key={option.code} value={option.code}>
+                      {option.label}
+                    </option>
+                  ))}
+                </select>
+              </label>
 
-            {payable ? (
-              <button
-                type="button"
-                onClick={() => void handleCollectPayment()}
-                disabled={busyAction !== null}
-                className="rounded-lg bg-green-700 px-4 py-2 text-sm font-medium text-white transition-opacity hover:opacity-90 disabled:opacity-60"
-              >
-                {busyAction === "payment"
-                  ? "جارٍ التنفيذ..."
-                  : "تم تحصيل المبلغ"}
-              </button>
-            ) : null}
+              <label className="block space-y-1 text-sm">
+                <span className="font-medium">
+                  {cancelReasonCode === "other"
+                    ? "ملاحظة توضح السبب (مطلوبة)"
+                    : "ملاحظة للعميل (اختياري)"}
+                </span>
+                <textarea
+                  value={cancelNote}
+                  onChange={(event) => setCancelNote(event.target.value)}
+                  rows={3}
+                  maxLength={CANCELLATION_NOTE_MAX_LENGTH}
+                  disabled={busyAction !== null}
+                  className={fieldClass}
+                />
+                <span className="block text-xs text-zinc-500 dark:text-zinc-400">
+                  {cancelNote.length}/{CANCELLATION_NOTE_MAX_LENGTH}
+                </span>
+              </label>
 
-            {cancellable ? (
-              <button
-                type="button"
-                onClick={() => void handleCancel()}
-                disabled={busyAction !== null}
-                className="rounded-lg border border-red-300 px-4 py-2 text-sm font-medium text-red-700 transition-colors hover:bg-red-50 disabled:opacity-60 dark:border-red-800 dark:text-red-300 dark:hover:bg-red-950/40"
-              >
-                {busyAction === "cancel"
-                  ? "جارٍ الإلغاء..."
-                  : "إلغاء الطلب"}
-              </button>
-            ) : null}
-          </div>
+              <p className="rounded-lg bg-amber-50 px-3 py-2 text-sm text-amber-800 dark:bg-amber-950/40 dark:text-amber-200">
+                هذا السبب سيظهر للعميل
+              </p>
+
+              <div className="flex flex-wrap gap-2">
+                <button
+                  type="submit"
+                  disabled={busyAction !== null}
+                  className="rounded-lg bg-red-700 px-4 py-2 text-sm font-medium text-white transition-opacity hover:opacity-90 disabled:opacity-60"
+                >
+                  {busyAction === "cancel"
+                    ? "جارٍ الإلغاء..."
+                    : "تأكيد الإلغاء"}
+                </button>
+                <button
+                  type="button"
+                  onClick={closeCancelForm}
+                  disabled={busyAction !== null}
+                  className="rounded-lg border border-black/15 px-4 py-2 text-sm font-medium disabled:opacity-60 dark:border-white/20"
+                >
+                  تراجع
+                </button>
+              </div>
+            </form>
+          ) : (
+            <div className="mt-4 flex flex-wrap gap-2">
+              {nextStatus ? (
+                <button
+                  type="button"
+                  onClick={() => void handleNextStatus(nextStatus)}
+                  disabled={busyAction !== null}
+                  className="rounded-lg bg-foreground px-4 py-2 text-sm font-medium text-background transition-opacity hover:opacity-90 disabled:opacity-60"
+                >
+                  {busyAction === "status"
+                    ? "جارٍ التنفيذ..."
+                    : NEXT_ACTION_LABELS[nextStatus]}
+                </button>
+              ) : null}
+
+              {payable ? (
+                <button
+                  type="button"
+                  onClick={() => void handleCollectPayment()}
+                  disabled={busyAction !== null}
+                  className="rounded-lg bg-green-700 px-4 py-2 text-sm font-medium text-white transition-opacity hover:opacity-90 disabled:opacity-60"
+                >
+                  {busyAction === "payment"
+                    ? "جارٍ التنفيذ..."
+                    : "تم تحصيل المبلغ"}
+                </button>
+              ) : null}
+
+              {cancellable ? (
+                <button
+                  type="button"
+                  onClick={openCancelForm}
+                  disabled={busyAction !== null}
+                  className="rounded-lg border border-red-300 px-4 py-2 text-sm font-medium text-red-700 transition-colors hover:bg-red-50 disabled:opacity-60 dark:border-red-800 dark:text-red-300 dark:hover:bg-red-950/40"
+                >
+                  إلغاء الطلب
+                </button>
+              ) : null}
+            </div>
+          )
         ) : (
           <p className="mt-3 text-sm text-zinc-600 dark:text-zinc-400">
             لا توجد إجراءات متاحة لهذا الطلب.

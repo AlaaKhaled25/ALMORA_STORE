@@ -1,3 +1,4 @@
+import { isCancellationReasonCode } from "@/lib/cancellation";
 import { getAdminDb } from "@/lib/firebase-admin";
 import { isOrderStatus, isPaymentStatus } from "@/lib/order-status";
 import {
@@ -172,6 +173,15 @@ export async function getAdminOrderDetails(
     cancellationReason:
       typeof data.cancellationReason === "string"
         ? data.cancellationReason.trim()
+        : "",
+    cancellationReasonCode: isCancellationReasonCode(
+      data.cancellationReasonCode,
+    )
+      ? data.cancellationReasonCode
+      : null,
+    cancellationNote:
+      typeof data.cancellationNote === "string"
+        ? data.cancellationNote.trim()
         : "",
     updatedAt: timestampToMillis(data.updatedAt),
     cancelledAt: timestampToMillis(data.cancelledAt),

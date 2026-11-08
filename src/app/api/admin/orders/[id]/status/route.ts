@@ -10,7 +10,7 @@ import { requireAdmin } from "@/lib/require-admin";
 
 type RouteParams = { params: Promise<{ id: string }> };
 
-// Admin: move one step forward, or cancel with a required reason.
+// Admin: move one step forward, or cancel with a customer-facing reason.
 export async function PATCH(request: Request, { params }: RouteParams) {
   const { session, response } = await requireAdmin();
   if (!session) return response;
@@ -31,6 +31,14 @@ export async function PATCH(request: Request, { params }: RouteParams) {
   const status = input.status;
   const reason =
     typeof input.reason === "string" ? input.reason.trim() : "";
+  const cancellationReasonCode =
+    typeof input.cancellationReasonCode === "string"
+      ? input.cancellationReasonCode.trim()
+      : "";
+  const cancellationNote =
+    typeof input.cancellationNote === "string"
+      ? input.cancellationNote.trim()
+      : "";
 
   if (!isOrderStatus(status)) {
     return apiError(400, "VALIDATION_ERROR", "حالة الطلب غير صحيحة.", [
@@ -38,22 +46,21 @@ export async function PATCH(request: Request, { params }: RouteParams) {
     ]);
   }
 
-  if (reason.length > 500) {
-    return apiError(400, "VALIDATION_ERROR", "سبب الإلغاء طويل جدًا.", [
+  if (status !== "cancelled" && reason.length > 500) {
+    return apiError(400, "VALIDATION_ERROR", "سبب التحديث طويل جدًا.", [
       { field: "reason", message: "الحد الأقصى 500 حرف." },
-    ]);
-  }
-
-  if (status === "cancelled" && reason === "") {
-    return apiError(400, "VALIDATION_ERROR", "سبب الإلغاء مطلوب.", [
-      { field: "reason", message: "اكتب سبب الإلغاء." },
     ]);
   }
 
   try {
     const result =
       status === "cancelled"
-        ? await cancelOrder(id, reason, session)
+        ? await cancelOrder(
+            id,
+            cancellationReasonCode,
+            cancellationNote,
+            session,
+          )
         : await changeOrderStatus(id, status, session, reason);
 
     if (!result.ok) {

@@ -82,6 +82,13 @@ export type OrderStatus =
 
 export type PaymentStatus = "unpaid" | "paid";
 
+export type CancellationReasonCode =
+  | "out_of_stock"
+  | "cannot_reach_customer"
+  | "insufficient_delivery_info"
+  | "customer_request"
+  | "other";
+
 export type Order = {
   id: string;
   orderNumber: string; // public and hard to guess
@@ -103,6 +110,8 @@ export type Order = {
   customerNotes?: string;
   stockRestored?: boolean;
   cancellationReason?: string;
+  cancellationReasonCode?: CancellationReasonCode;
+  cancellationNote?: string;
   createdAt: Timestamp;
   updatedAt: Timestamp;
   cancelledAt?: Timestamp;
@@ -176,6 +185,8 @@ export type AdminOrderDetails = AdminOrderListItem & {
   paymentMethod: "COD";
   stockRestored: boolean;
   cancellationReason: string;
+  cancellationReasonCode: CancellationReasonCode | null;
+  cancellationNote: string;
   updatedAt: number | null;
   cancelledAt: number | null;
   history: AdminOrderHistoryEntry[];

@@ -5,6 +5,11 @@ import {
 import type { ApiErrorCode, ApiErrorDetail } from "@/lib/api-errors";
 import { readOrderItems } from "@/lib/admin-orders";
 import { writeAuditLogInTransaction } from "@/lib/audit-log";
+import {
+  CANCELLATION_NOTE_MAX_LENGTH,
+  CANCELLATION_REASON_LABELS,
+  isCancellationReasonCode,
+} from "@/lib/cancellation";
 import { getAdminDb } from "@/lib/firebase-admin";
 import {
   canCancelOrder,
@@ -118,21 +123,44 @@ export async function changeOrderStatus(
 // Archived products and inactive categories do not block stock restoration.
 export async function cancelOrder(
   orderId: string,
-  reason: string,
+  reasonCodeInput: string,
+  noteInput: string,
   actor: AdminSession,
 ): Promise<AdminOrderActionResult> {
-  const trimmedReason = reason.trim();
-  if (trimmedReason === "") {
-    return failure(400, "VALIDATION_ERROR", "سبب الإلغاء مطلوب.", [
-      { field: "reason", message: "اكتب سبب الإلغاء." },
-    ]);
-  }
-  if (trimmedReason.length > 500) {
-    return failure(400, "VALIDATION_ERROR", "سبب الإلغاء طويل جدًا.", [
-      { field: "reason", message: "الحد الأقصى 500 حرف." },
+  const reasonCode = reasonCodeInput.trim();
+  if (!isCancellationReasonCode(reasonCode)) {
+    return failure(400, "VALIDATION_ERROR", "سبب الإلغاء غير صالح.", [
+      {
+        field: "cancellationReasonCode",
+        message: "اختر سببًا من القائمة.",
+      },
     ]);
   }
 
+  const note = noteInput.trim();
+  if (note.length > CANCELLATION_NOTE_MAX_LENGTH) {
+    return failure(400, "VALIDATION_ERROR", "ملاحظة الإلغاء طويلة جدًا.", [
+      {
+        field: "cancellationNote",
+        message: `الحد الأقصى ${CANCELLATION_NOTE_MAX_LENGTH} حرف.`,
+      },
+    ]);
+  }
+  if (reasonCode === "other" && note === "") {
+    return failure(
+      400,
+      "VALIDATION_ERROR",
+      "ملاحظة سبب الإلغاء مطلوبة.",
+      [
+        {
+          field: "cancellationNote",
+          message: "اكتب ملاحظة توضح سبب الإلغاء.",
+        },
+      ],
+    );
+  }
+
+  const reasonLabel = CANCELLATION_REASON_LABELS[reasonCode];
   const db = getAdminDb();
   const orderRef = db.collection(ORDERS_COLLECTION).doc(orderId);
   const productsRef = db.collection("products");
@@ -200,7 +228,9 @@ export async function cancelOrder(
     transaction.update(orderRef, {
       orderStatus: "cancelled",
       stockRestored: true,
-      cancellationReason: trimmedReason,
+      cancellationReason: reasonLabel,
+      cancellationReasonCode: reasonCode,
+      cancellationNote: note,
       cancelledAt: now,
       updatedAt: now,
     });
@@ -226,7 +256,7 @@ export async function cancelOrder(
       changedByUserId: actor.uid,
       changedByUserEmail: actor.email,
       action: "order.cancel",
-      reason: trimmedReason,
+      reason: reasonLabel,
       createdAt: now,
     });
 
@@ -242,7 +272,8 @@ export async function cancelOrder(
       afterData: {
         orderStatus: "cancelled",
         stockRestored: true,
-        reason: trimmedReason,
+        cancellationReasonCode: reasonCode,
+        cancellationNote: note || null,
         restoredItems,
       },
     });

@@ -1,3 +1,7 @@
+import {
+  getCancellationReasonLabel,
+  isCancellationReasonCode,
+} from "@/lib/cancellation";
 import { normalizeEgyptianPhone } from "@/lib/checkout";
 import { getAdminDb } from "@/lib/firebase-admin";
 import {
@@ -28,6 +32,11 @@ export type TrackedStatusEvent = {
   createdAt: number | null;
 };
 
+export type TrackedCancellation = {
+  reasonLabel: string;
+  note: string;
+};
+
 export type TrackedOrder = {
   orderNumber: string;
   createdAt: number | null;
@@ -47,6 +56,7 @@ export type TrackedOrder = {
     addressLine: string;
   };
   statusHistory: TrackedStatusEvent[];
+  cancellation: TrackedCancellation | null;
 };
 
 function timestampToMillis(value: unknown): number | null {
@@ -96,6 +106,28 @@ function toShippingAddress(value: unknown): {
   return {
     city: String(data.city ?? ""),
     addressLine: String(data.addressLine ?? ""),
+  };
+}
+
+// Only the new customer-facing fields are public. Legacy cancellationReason
+// is internal and is deliberately never returned here.
+function toTrackedCancellation(
+  status: OrderStatus,
+  data: Record<string, unknown>,
+): TrackedCancellation | null {
+  if (
+    status !== "cancelled" ||
+    !isCancellationReasonCode(data.cancellationReasonCode)
+  ) {
+    return null;
+  }
+
+  return {
+    reasonLabel: getCancellationReasonLabel(data.cancellationReasonCode),
+    note:
+      typeof data.cancellationNote === "string"
+        ? data.cancellationNote.trim()
+        : "",
   };
 }
 
@@ -190,5 +222,6 @@ export async function findTrackedOrder(
     currency: "EGP",
     shippingAddress: toShippingAddress(data.shippingAddress),
     statusHistory,
+    cancellation: toTrackedCancellation(status, data),
   };
 }
