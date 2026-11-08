@@ -29,6 +29,24 @@ const fieldClass =
 const filterClass =
   "rounded-lg border border-black/15 bg-transparent px-3 py-2 text-sm outline-none focus:border-foreground dark:border-white/20";
 
+type ProductFormSnapshot = {
+  name: string;
+  description: string;
+  price: string;
+  stockQuantity: string;
+  categoryId: string;
+  images: ProductImage[];
+};
+
+type Toast = {
+  message: string;
+  tone: "success" | "warning";
+};
+
+function makeFormSnapshot(values: ProductFormSnapshot): string {
+  return JSON.stringify(values);
+}
+
 // Read the message from our standard error format.
 async function readErrorMessage(response: Response): Promise<string> {
   const data = await response.json().catch(() => null);
@@ -94,8 +112,10 @@ export default function ProductsManager() {
   const [categoryId, setCategoryId] = useState("");
   const [editingId, setEditingId] = useState<string | null>(null);
   const [formError, setFormError] = useState<string | null>(null);
-  const [successMessage, setSuccessMessage] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
+  const [isFormOpen, setIsFormOpen] = useState(false);
+  const [formBaseline, setFormBaseline] = useState("");
+  const [toast, setToast] = useState<Toast | null>(null);
 
   const [statusChangingId, setStatusChangingId] = useState<string | null>(null);
 
@@ -104,9 +124,11 @@ export default function ProductsManager() {
   const [uploading, setUploading] = useState(false);
   const [imageError, setImageError] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const requestCloseFormRef = useRef<() => void>(() => {});
 
   const [categoryFilter, setCategoryFilter] = useState("all");
   const [statusFilter, setStatusFilter] = useState<"all" | ProductStatus>("all");
+  const [searchQuery, setSearchQuery] = useState("");
 
   const reloadData = useCallback(async () => {
     try {
@@ -160,6 +182,39 @@ export default function ProductsManager() {
     };
   }, [router]);
 
+  useEffect(() => {
+    if (!toast) return;
+    const timer = window.setTimeout(() => setToast(null), 4000);
+    return () => window.clearTimeout(timer);
+  }, [toast]);
+
+  useEffect(() => {
+    if (!isFormOpen) return;
+
+    function handleKeyDown(event: KeyboardEvent) {
+      if (event.key !== "Escape") return;
+      event.preventDefault();
+      requestCloseFormRef.current();
+    }
+
+    document.addEventListener("keydown", handleKeyDown);
+    return () => document.removeEventListener("keydown", handleKeyDown);
+  }, [isFormOpen]);
+
+  useEffect(() => {
+    if (!isFormOpen) return;
+
+    const previousOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    return () => {
+      document.body.style.overflow = previousOverflow;
+    };
+  }, [isFormOpen]);
+
+  useEffect(() => {
+    requestCloseFormRef.current = requestCloseForm;
+  });
+
   function resetForm() {
     setName("");
     setDescription("");
@@ -174,17 +229,78 @@ export default function ProductsManager() {
   }
 
   function startEdit(product: ProductView) {
+    const nextPrice = piastresToEgp(product.price);
+    const nextStock = String(product.stockQuantity);
+
     setEditingId(product.id);
     setName(product.name);
     setDescription(product.description);
-    setPrice(piastresToEgp(product.price));
-    setStockQuantity(String(product.stockQuantity));
+    setPrice(nextPrice);
+    setStockQuantity(nextStock);
     setCategoryId(product.categoryId);
     setFormError(null);
-    setSuccessMessage(null);
+    setToast(null);
     setImages([...product.images]);
     setOriginalImages([...product.images]);
     setImageError(null);
+    setFormBaseline(
+      makeFormSnapshot({
+        name: product.name,
+        description: product.description,
+        price: nextPrice,
+        stockQuantity: nextStock,
+        categoryId: product.categoryId,
+        images: product.images,
+      }),
+    );
+    setIsFormOpen(true);
+  }
+
+  function openCreateForm() {
+    resetForm();
+    setFormBaseline(
+      makeFormSnapshot({
+        name: "",
+        description: "",
+        price: "",
+        stockQuantity: "",
+        categoryId: "",
+        images: [],
+      }),
+    );
+    setToast(null);
+    setIsFormOpen(true);
+  }
+
+  function closeFormImmediately() {
+    setIsFormOpen(false);
+    resetForm();
+    setFormBaseline("");
+  }
+
+  function requestCloseForm() {
+    if (saving || uploading) return;
+
+    const currentSnapshot = makeFormSnapshot({
+      name,
+      description,
+      price,
+      stockQuantity,
+      categoryId,
+      images,
+    });
+
+    if (formBaseline !== "" && currentSnapshot !== formBaseline) {
+      if (
+        !window.confirm(
+          "لديك تغييرات غير محفوظة. هل تريد إغلاق النموذج؟",
+        )
+      ) {
+        return;
+      }
+    }
+
+    closeFormImmediately();
   }
 
   function categoryName(id: string): string {
@@ -304,7 +420,7 @@ export default function ProductsManager() {
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     setFormError(null);
-    setSuccessMessage(null);
+    setToast(null);
 
     if (uploading) {
       setFormError("انتظر حتى ينتهي رفع الصور.");
@@ -375,17 +491,22 @@ export default function ProductsManager() {
       }
 
       // Images removed while editing are deleted from Cloudinary after saving.
-      const removedImages = editingId
+      const wasEditing = editingId !== null;
+      const removedImages = wasEditing
         ? originalImages.filter(
             (original) =>
               !images.some((image) => image.publicId === original.publicId),
           )
         : [];
 
-      setSuccessMessage(
-        editingId ? "تم تحديث المنتج بنجاح." : "تمت إضافة المنتج بنجاح.",
-      );
-      resetForm();
+      closeFormImmediately();
+      setToast({
+        message: wasEditing
+          ? "تم تحديث المنتج بنجاح."
+          : "تمت إضافة المنتج بنجاح.",
+        tone: "success",
+      });
+      setSaving(false);
       await reloadData();
 
       if (removedImages.length > 0) {
@@ -402,9 +523,11 @@ export default function ProductsManager() {
         }
 
         if (deleteFailed) {
-          setSuccessMessage(
-            "تم حفظ المنتج، لكن تعذر حذف بعض الصور من Cloudinary. يمكنك المحاولة لاحقًا.",
-          );
+          setToast({
+            message:
+              "تم حفظ المنتج، لكن تعذر حذف بعض الصور من Cloudinary. يمكنك المحاولة لاحقًا.",
+            tone: "warning",
+          });
         }
       }
     } catch (error) {
@@ -457,11 +580,18 @@ export default function ProductsManager() {
   }
 
   // Filtering happens in the browser, so Firestore needs no composite index.
+  const normalizedSearch = searchQuery.trim().toLowerCase();
   const visibleProducts = products.filter((product) => {
     if (categoryFilter !== "all" && product.categoryId !== categoryFilter) {
       return false;
     }
     if (statusFilter !== "all" && product.status !== statusFilter) {
+      return false;
+    }
+    if (
+      normalizedSearch !== "" &&
+      !product.name.toLowerCase().includes(normalizedSearch)
+    ) {
       return false;
     }
     return true;
@@ -479,13 +609,37 @@ export default function ProductsManager() {
   );
 
   return (
-    <div className="grid gap-6 xl:grid-cols-[360px_1fr]">
-      <section className="rounded-2xl border border-black/10 p-5 dark:border-white/15">
-        <h2 className="mb-4 text-lg font-semibold">
-          {editingId ? "تعديل منتج" : "إضافة منتج"}
-        </h2>
+    <>
+      {isFormOpen ? (
+        <div
+          className="fixed inset-0 z-50 flex items-stretch justify-center bg-black/40 p-0 sm:items-center sm:p-4"
+          onClick={requestCloseForm}
+        >
+          <div
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="product-form-title"
+            className="flex h-full w-full flex-col overflow-y-auto bg-background shadow-xl sm:h-auto sm:max-h-[90vh] sm:max-w-2xl sm:rounded-2xl"
+            onClick={(event) => event.stopPropagation()}
+          >
+            <div className="sticky top-0 z-10 flex items-center justify-between gap-3 border-b border-black/10 bg-background p-4 dark:border-white/15">
+              <h2 id="product-form-title" className="text-lg font-semibold">
+                {editingId ? "تعديل منتج" : "إضافة منتج"}
+              </h2>
+              <button
+                type="button"
+                onClick={requestCloseForm}
+                disabled={saving || uploading}
+                className="rounded-lg border border-black/10 px-3 py-1.5 text-sm font-medium transition-colors hover:bg-black/5 disabled:opacity-60 dark:border-white/15 dark:hover:bg-white/10"
+              >
+                إغلاق
+              </button>
+            </div>
 
-        <form onSubmit={handleSubmit} className="space-y-4">
+            <form
+              onSubmit={handleSubmit}
+              className="space-y-4 p-4 sm:p-5"
+            >
           <label className="block space-y-1 text-sm">
             <span className="font-medium">اسم المنتج</span>
             <input
@@ -664,12 +818,6 @@ export default function ProductsManager() {
             </p>
           ) : null}
 
-          {successMessage ? (
-            <p className="rounded-lg bg-green-50 px-3 py-2 text-sm text-green-700 dark:bg-green-950/40 dark:text-green-300">
-              {successMessage}
-            </p>
-          ) : null}
-
           <div className="flex flex-wrap gap-2">
             <button
               type="submit"
@@ -680,54 +828,76 @@ export default function ProductsManager() {
                 ? "جارٍ الحفظ..."
                 : editingId
                   ? "حفظ التعديلات"
-                  : "إضافة"}
+                  : "إضافة المنتج"}
             </button>
 
-            {editingId ? (
-              <button
-                type="button"
-                onClick={resetForm}
-                className="rounded-lg border border-black/10 px-4 py-2 text-sm font-medium transition-colors hover:bg-black/5 dark:border-white/15 dark:hover:bg-white/10"
-              >
-                إلغاء
-              </button>
-            ) : null}
+            <button
+              type="button"
+              onClick={requestCloseForm}
+              disabled={saving || uploading}
+              className="rounded-lg border border-black/10 px-4 py-2 text-sm font-medium transition-colors hover:bg-black/5 disabled:opacity-60 dark:border-white/15 dark:hover:bg-white/10"
+            >
+              إلغاء
+            </button>
           </div>
-        </form>
-      </section>
+            </form>
+          </div>
+        </div>
+      ) : null}
 
       <section className="rounded-2xl border border-black/10 p-5 dark:border-white/15">
-        <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
-          <h2 className="text-lg font-semibold">قائمة المنتجات</h2>
-
-          <div className="flex flex-wrap gap-2">
-            <select
-              value={categoryFilter}
-              onChange={(event) => setCategoryFilter(event.target.value)}
-              className={filterClass}
-              aria-label="تصفية حسب الفئة"
-            >
-              <option value="all">كل الفئات</option>
-              {categories.map((category) => (
-                <option key={category.id} value={category.id}>
-                  {category.name}
-                </option>
-              ))}
-            </select>
-
-            <select
-              value={statusFilter}
-              onChange={(event) =>
-                setStatusFilter(event.target.value as "all" | ProductStatus)
-              }
-              className={filterClass}
-              aria-label="تصفية حسب الحالة"
-            >
-              <option value="all">كل الحالات</option>
-              <option value="active">نشط</option>
-              <option value="archived">مؤرشف</option>
-            </select>
+        <div className="mb-4 flex flex-wrap items-start justify-between gap-3">
+          <div>
+            <h2 className="text-lg font-semibold">قائمة المنتجات</h2>
+            <p className="mt-1 text-xs text-zinc-600 dark:text-zinc-400">
+              {visibleProducts.length} من {products.length} منتج
+            </p>
           </div>
+          <button
+            type="button"
+            onClick={openCreateForm}
+            className="rounded-full bg-foreground px-5 py-2.5 text-sm font-medium text-background transition-opacity hover:opacity-90"
+          >
+            إضافة منتج
+          </button>
+        </div>
+
+        <div className="mb-4 flex flex-wrap gap-2">
+          <input
+            type="search"
+            value={searchQuery}
+            onChange={(event) => setSearchQuery(event.target.value)}
+            placeholder="ابحث باسم المنتج..."
+            aria-label="بحث باسم المنتج"
+            className={`${filterClass} min-w-[200px] flex-1`}
+          />
+
+          <select
+            value={categoryFilter}
+            onChange={(event) => setCategoryFilter(event.target.value)}
+            className={filterClass}
+            aria-label="تصفية حسب الفئة"
+          >
+            <option value="all">كل الفئات</option>
+            {categories.map((category) => (
+              <option key={category.id} value={category.id}>
+                {category.name}
+              </option>
+            ))}
+          </select>
+
+          <select
+            value={statusFilter}
+            onChange={(event) =>
+              setStatusFilter(event.target.value as "all" | ProductStatus)
+            }
+            className={filterClass}
+            aria-label="تصفية حسب الحالة"
+          >
+            <option value="all">كل الحالات</option>
+            <option value="active">نشط</option>
+            <option value="archived">مؤرشف</option>
+          </select>
         </div>
 
         {loading ? (
@@ -758,7 +928,7 @@ export default function ProductsManager() {
           </p>
         ) : (
           <div className="overflow-x-auto">
-            <table className="w-full text-right text-sm">
+            <table className="w-full min-w-[720px] text-right text-sm">
               <thead>
                 <tr className="border-b border-black/10 dark:border-white/15">
                   <th className="p-2 font-semibold">المنتج</th>
@@ -849,6 +1019,18 @@ export default function ProductsManager() {
           </div>
         )}
       </section>
-    </div>
+
+      {toast ? (
+        <div
+          role="status"
+          aria-live="polite"
+          className={`fixed inset-x-4 bottom-4 z-[60] rounded-xl px-4 py-3 text-sm font-medium text-white shadow-lg sm:left-auto sm:right-6 sm:max-w-md ${
+            toast.tone === "success" ? "bg-green-700" : "bg-amber-700"
+          }`}
+        >
+          {toast.message}
+        </div>
+      ) : null}
+    </>
   );
 }
