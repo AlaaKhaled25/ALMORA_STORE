@@ -149,7 +149,7 @@ export default function CartDrawer({
                 </p>
               </div>
               <Link
-                href="/products"
+                href="/shop"
                 onClick={onClose}
                 className="inline-flex min-h-11 items-center justify-center rounded-full bg-brand-wine px-6 text-sm font-semibold text-white transition hover:bg-brand-wine-dark"
               >
@@ -166,11 +166,11 @@ export default function CartDrawer({
                 return (
                   <li
                     key={item.productId}
-                    className="rounded-2xl border border-brand-line bg-white p-3"
+                    className="rounded-2xl border border-brand-line bg-brand-surface p-3"
                   >
                     <div className="flex gap-3">
                       <Link
-                        href={`/products/${item.productId}`}
+                        href={`/product/${item.productId}`}
                         onClick={onClose}
                         className="relative h-20 w-20 shrink-0 overflow-hidden rounded-2xl bg-brand-sand"
                       >
@@ -193,9 +193,9 @@ export default function CartDrawer({
                       <div className="min-w-0 flex-1">
                         <div className="flex items-start justify-between gap-2">
                           <Link
-                            href={`/products/${item.productId}`}
+                            href={`/product/${item.productId}`}
                             onClick={onClose}
-                            className="line-clamp-2 text-sm font-semibold hover:text-brand-wine"
+                            className="line-clamp-2 text-sm font-semibold hover:text-brand-accent"
                           >
                             {info?.name || "جارٍ التحقق..."}
                           </Link>

@@ -3,7 +3,7 @@ import { BRAND, DELIVERY_FEE_LABEL, whatsappUrl } from "@/lib/brand";
 
 export default function StoreFooter() {
   return (
-    <footer className="mt-16 border-t border-brand-line bg-white/60">
+    <footer className="mt-16 border-t border-brand-line bg-brand-surface/60">
       <div className="mx-auto grid max-w-6xl gap-8 px-4 py-10 sm:px-6 md:grid-cols-[1.4fr_1fr_1fr]">
         <div>
           <div className="flex items-center gap-2.5">
@@ -38,20 +38,20 @@ export default function StoreFooter() {
           <h2 className="text-sm font-bold">روابط سريعة</h2>
           <nav className="mt-3 flex flex-col gap-1 text-sm text-brand-muted">
             <Link
-              href="/products"
-              className="inline-flex min-h-11 items-center hover:text-brand-wine"
+              href="/shop"
+              className="inline-flex min-h-11 items-center hover:text-brand-accent"
             >
               كل المنتجات
             </Link>
             <Link
               href="/cart"
-              className="inline-flex min-h-11 items-center hover:text-brand-wine"
+              className="inline-flex min-h-11 items-center hover:text-brand-accent"
             >
               سلة التسوق
             </Link>
             <Link
-              href="/track"
-              className="inline-flex min-h-11 items-center hover:text-brand-wine"
+              href="/track-order"
+              className="inline-flex min-h-11 items-center hover:text-brand-accent"
             >
               تتبع طلبك
             </Link>

@@ -210,7 +210,7 @@ export default function CheckoutView() {
       <div className="mx-auto max-w-3xl px-4 py-6 sm:px-6 sm:py-10">
         <CheckoutSteps current={3} />
 
-        <div className="mt-5 overflow-hidden rounded-[2rem] border border-brand-success/20 bg-white shadow-xl shadow-brand-success/5">
+        <div className="mt-5 overflow-hidden rounded-[2rem] border border-brand-success/20 bg-brand-surface shadow-xl shadow-brand-success/5">
           <div className="bg-gradient-to-b from-brand-success/10 to-transparent p-6 text-center sm:p-8">
             <span className="mx-auto inline-flex h-20 w-20 items-center justify-center rounded-full bg-brand-success text-white shadow-lg shadow-brand-success/20">
               <svg
@@ -251,7 +251,7 @@ export default function CheckoutView() {
             <div className="mt-4 flex flex-wrap justify-center gap-3">
               <CopyOrderButton orderNumber={success.orderNumber} />
               <Link
-                href="/track"
+                href="/track-order"
                 className="inline-flex min-h-11 items-center justify-center rounded-full bg-brand-wine px-6 text-sm font-semibold text-white transition hover:bg-brand-wine-dark"
               >
                 تتبع طلبك
@@ -311,7 +311,7 @@ export default function CheckoutView() {
             </div>
 
             <Link
-              href="/products"
+              href="/shop"
               className="mt-4 inline-flex min-h-11 items-center text-sm font-semibold text-brand-wine hover:underline"
             >
               متابعة التسوق
@@ -327,7 +327,7 @@ export default function CheckoutView() {
       <div className="mx-auto max-w-3xl px-4 py-6 sm:px-6 sm:py-10">
         <CheckoutSteps current={2} />
 
-        <div className="mt-5 rounded-[2rem] border border-brand-line bg-white p-8 text-center sm:p-12">
+        <div className="mt-5 rounded-[2rem] border border-brand-line bg-brand-surface p-8 text-center sm:p-12">
           <span className="mx-auto inline-flex h-20 w-20 items-center justify-center rounded-full bg-brand-wine-soft text-brand-wine">
             <svg
               viewBox="0 0 24 24"
@@ -350,7 +350,7 @@ export default function CheckoutView() {
             أضف منتجات إلى السلة قبل إتمام الطلب.
           </p>
           <Link
-            href="/products"
+            href="/shop"
             className="mt-6 inline-flex min-h-12 items-center justify-center rounded-full bg-brand-wine px-7 text-sm font-semibold text-white transition hover:bg-brand-wine-dark"
           >
             تصفح المنتجات
@@ -374,7 +374,7 @@ export default function CheckoutView() {
       <div className="mt-6 grid gap-6 lg:grid-cols-[1fr_360px]">
         <form
           onSubmit={handleSubmit}
-          className="rounded-3xl border border-brand-line bg-white p-5 shadow-sm shadow-brand-ink/5 sm:p-6"
+          className="rounded-3xl border border-brand-line bg-brand-surface p-5 shadow-sm shadow-brand-ink/5 sm:p-6"
         >
           <h2 className="text-lg font-extrabold">بيانات التوصيل</h2>
 
@@ -543,7 +543,7 @@ export default function CheckoutView() {
           </button>
         </form>
 
-        <aside className="h-fit rounded-3xl border border-brand-line bg-white p-5 shadow-sm shadow-brand-ink/5 lg:sticky lg:top-40">
+        <aside className="premium-surface h-fit rounded-3xl p-5 lg:sticky lg:top-40">
           <h2 className="text-lg font-extrabold">ملخص الطلب</h2>
 
           <ul className="mt-4 space-y-3 text-sm">

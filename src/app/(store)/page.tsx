@@ -121,6 +121,22 @@ export default async function StoreHomePage() {
   return (
     <div className="mx-auto max-w-6xl px-4 py-6 sm:px-6 sm:py-10">
       <section className="relative overflow-hidden rounded-[2rem] bg-brand-wine text-white shadow-2xl shadow-brand-wine/20 sm:rounded-[2.5rem]">
+        <Image
+          src="/images/almora-hero.jpg"
+          alt=""
+          fill
+          priority
+          sizes="(max-width: 1024px) 100vw, 1152px"
+          className="object-cover object-center opacity-60"
+        />
+        <div
+          className="absolute inset-0 bg-gradient-to-l from-brand-wine-dark/95 via-brand-wine/85 to-brand-wine/55"
+          aria-hidden="true"
+        />
+        <div
+          className="absolute inset-0 bg-[radial-gradient(circle_at_20%_20%,rgba(230,164,189,0.28),transparent_38%)]"
+          aria-hidden="true"
+        />
         <div
           className="pointer-events-none absolute -left-24 -top-24 h-72 w-72 rounded-full bg-white/10 blur-3xl"
           aria-hidden="true"
@@ -137,7 +153,7 @@ export default async function StoreHomePage() {
               {BRAND.name} · {BRAND.nameArabic}
             </p>
 
-            <h1 className="mt-5 text-4xl font-extrabold leading-[1.25] sm:text-5xl lg:text-6xl">
+            <h1 className="text-glow mt-5 text-4xl font-extrabold leading-[1.25] sm:text-5xl lg:text-6xl">
               تفاصيل مختارة
               <span className="mt-2 block text-brand-wine-soft">
                 تليق بك.
@@ -151,13 +167,13 @@ export default async function StoreHomePage() {
 
             <div className="mt-7 flex flex-wrap gap-3">
               <Link
-                href="/products"
+                href="/shop"
                 className="inline-flex min-h-12 items-center justify-center rounded-full bg-white px-7 text-sm font-bold text-brand-wine transition hover:bg-brand-wine-soft focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-white"
               >
                 تسوق الآن
               </Link>
               <Link
-                href="/track"
+                href="/track-order"
                 className="inline-flex min-h-12 items-center justify-center rounded-full border border-white/25 bg-white/5 px-6 text-sm font-semibold text-white transition hover:bg-white/10"
               >
                 تتبع طلبك
@@ -175,7 +191,7 @@ export default async function StoreHomePage() {
                 className="absolute -inset-4 rounded-[2.5rem] bg-white/10 blur-2xl"
                 aria-hidden="true"
               />
-              <div className="relative rounded-[2rem] border border-white/20 bg-white/10 p-3 backdrop-blur">
+              <div className="glow-soft relative rounded-[2rem] border border-white/20 bg-white/10 p-3 backdrop-blur">
                 <div className="relative aspect-[4/5] overflow-hidden rounded-[1.5rem] bg-brand-wine-dark">
                   {heroImage ? (
                     <Image
@@ -219,7 +235,7 @@ export default async function StoreHomePage() {
         {trustItems.map((item) => (
           <div
             key={item.title}
-            className="flex items-start gap-3 rounded-2xl border border-brand-line bg-white/80 p-4"
+            className="flex items-start gap-3 rounded-2xl border border-brand-line bg-brand-surface/80 p-4"
           >
             <span className="inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-brand-wine-soft text-brand-wine">
               <TrustIcon icon={item.icon} />
@@ -243,7 +259,7 @@ export default async function StoreHomePage() {
             <h2 className="mt-1 text-2xl font-extrabold sm:text-3xl">الفئات</h2>
           </div>
           <Link
-            href="/products"
+            href="/shop"
             className="inline-flex min-h-11 items-center text-sm font-semibold text-brand-wine hover:underline"
           >
             كل المنتجات
@@ -251,7 +267,7 @@ export default async function StoreHomePage() {
         </div>
 
         {categories.length === 0 ? (
-          <p className="rounded-3xl border border-brand-line bg-white p-6 text-center text-sm text-brand-muted">
+          <p className="rounded-3xl border border-brand-line bg-brand-surface p-6 text-center text-sm text-brand-muted">
             لا توجد فئات متاحة حاليًا.
           </p>
         ) : (
@@ -259,8 +275,8 @@ export default async function StoreHomePage() {
             {categories.map((category, index) => (
               <Link
                 key={category.id}
-                href={`/categories/${category.id}`}
-                className="group flex min-h-32 flex-col justify-between rounded-3xl border border-brand-line bg-white p-5 transition duration-300 hover:-translate-y-1 hover:border-brand-wine/20 hover:shadow-lg hover:shadow-brand-ink/5"
+                href={`/collections/${category.id}`}
+                className="group flex min-h-32 flex-col justify-between rounded-3xl border border-brand-line bg-brand-surface p-5 transition duration-300 hover:-translate-y-1 hover:border-brand-wine/20 hover:shadow-lg hover:shadow-brand-ink/5"
               >
                 <span className="inline-flex h-11 w-11 items-center justify-center rounded-2xl bg-brand-wine-soft text-brand-wine transition group-hover:bg-brand-wine group-hover:text-white">
                   <CategoryGlyph index={index} />
@@ -277,6 +293,83 @@ export default async function StoreHomePage() {
         )}
       </section>
 
+      <section className="premium-surface mt-10 overflow-hidden rounded-[2rem] sm:mt-14 sm:rounded-[2.5rem]">
+        <div className="grid lg:grid-cols-[1.05fr_0.95fr]">
+          <div className="relative min-h-[320px] lg:min-h-[480px]">
+            <Image
+              src="/images/almora-store.jpg"
+              alt="مساحة عرض ألمورا"
+              fill
+              sizes="(max-width: 1024px) 100vw, 55vw"
+              className="object-cover"
+            />
+            <div
+              className="absolute inset-0 bg-gradient-to-t from-brand-ink/75 via-brand-ink/10 to-transparent"
+              aria-hidden="true"
+            />
+            <div className="absolute bottom-5 right-5 left-5 rounded-2xl border border-white/15 bg-black/25 p-4 text-white backdrop-blur-md sm:right-6 sm:left-6">
+              <p className="text-xs font-semibold text-white/70">
+                تجربة ألمورا
+              </p>
+              <p className="mt-1 text-sm leading-6">
+                مساحة هادئة، تفاصيل دافئة، واختيارات تُشبهك.
+              </p>
+            </div>
+          </div>
+
+          <div className="flex flex-col justify-center p-6 sm:p-10">
+            <p className="text-xs font-bold uppercase tracking-[0.18em] text-brand-wine">
+              قصة ألمورا
+            </p>
+            <h2 className="mt-2 text-2xl font-extrabold sm:text-3xl">
+              تفاصيل تُختار بعناية
+            </h2>
+            <p className="mt-4 text-sm leading-8 text-brand-muted">
+              في ألمورا نختار كل قطعة بهدوء: خامة مريحة، لون يبقى معك، وتفصيلة
+              صغيرة تصنع الفرق. مجموعاتنا تجمع بين الأناقة اليومية واللمسة
+              الدافئة التي تكمل إطلالتك.
+            </p>
+
+            <div className="mt-6 grid grid-cols-3 gap-2">
+              {[
+                {
+                  src: "/images/almora-wardrobe.jpg",
+                  alt: "قطع مختارة من خزانة ألمورا",
+                },
+                {
+                  src: "/images/almora-editorial.jpg",
+                  alt: "إطلالة من تحرير ألمورا",
+                },
+                {
+                  src: "/images/almora-accessories.jpg",
+                  alt: "إكسسوارات ألمورا",
+                },
+              ].map((image) => (
+                <div
+                  key={image.src}
+                  className="relative aspect-[3/4] overflow-hidden rounded-2xl bg-brand-sand"
+                >
+                  <Image
+                    src={image.src}
+                    alt={image.alt}
+                    fill
+                    sizes="(max-width: 1024px) 30vw, 160px"
+                    className="object-cover transition duration-500 hover:scale-105"
+                  />
+                </div>
+              ))}
+            </div>
+
+            <Link
+              href="/shop"
+              className="mt-6 inline-flex min-h-11 w-fit items-center justify-center rounded-full bg-brand-wine px-6 text-sm font-bold text-white transition hover:bg-brand-wine-dark"
+            >
+              اكتشف المجموعة
+            </Link>
+          </div>
+        </div>
+      </section>
+
       <section className="mt-10 sm:mt-14">
         <div className="mb-5 flex items-end justify-between gap-3">
           <div>
@@ -288,7 +381,7 @@ export default async function StoreHomePage() {
             </h2>
           </div>
           <Link
-            href="/products?sort=newest"
+            href="/shop?sort=newest"
             className="inline-flex min-h-11 items-center text-sm font-semibold text-brand-wine hover:underline"
           >
             عرض الكل
@@ -296,7 +389,7 @@ export default async function StoreHomePage() {
         </div>
 
         {products.length === 0 ? (
-          <div className="rounded-3xl border border-brand-line bg-white p-10 text-center">
+          <div className="rounded-3xl border border-brand-line bg-brand-surface p-10 text-center">
             <p className="font-bold">لا توجد منتجات متاحة حاليًا.</p>
             <p className="mt-2 text-sm text-brand-muted">
               تابعنا قريبًا، نضيف منتجات جديدة باستمرار.

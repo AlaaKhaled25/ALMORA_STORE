@@ -49,13 +49,13 @@ export default async function ProductPage({ params }: ProductPageProps) {
   return (
     <div className="mx-auto max-w-6xl px-4 py-6 pb-28 sm:px-6 sm:py-10 lg:pb-10">
       <nav className="flex flex-wrap items-center gap-2 text-xs text-brand-muted">
-        <Link href="/" className="hover:text-brand-wine">
+        <Link href="/" className="hover:text-brand-accent">
           الرئيسية
         </Link>
         <span aria-hidden="true">/</span>
         <Link
-          href={`/categories/${product.categoryId}`}
-          className="hover:text-brand-wine"
+          href={`/collections/${product.categoryId}`}
+          className="hover:text-brand-accent"
         >
           {product.categoryName}
         </Link>
@@ -69,7 +69,7 @@ export default async function ProductPage({ params }: ProductPageProps) {
         <div className="space-y-5">
           <div>
             <Link
-              href={`/categories/${product.categoryId}`}
+              href={`/collections/${product.categoryId}`}
               className="inline-flex min-h-11 items-center text-sm font-semibold text-brand-wine hover:underline"
             >
               {product.categoryName}
@@ -87,7 +87,7 @@ export default async function ProductPage({ params }: ProductPageProps) {
             </div>
           </div>
 
-          <div className="rounded-3xl border border-brand-line bg-white p-4 shadow-sm shadow-brand-ink/5 sm:p-5">
+          <div className="premium-surface rounded-3xl p-4 sm:p-5">
             <ProductPurchase
               productId={product.id}
               price={product.price}
@@ -97,7 +97,7 @@ export default async function ProductPage({ params }: ProductPageProps) {
 
           <div className="rounded-3xl bg-brand-wine-soft p-5">
             <div className="flex items-start gap-3">
-              <span className="inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-white text-brand-wine">
+              <span className="inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-brand-surface text-brand-wine">
                 <svg
                   viewBox="0 0 24 24"
                   fill="none"

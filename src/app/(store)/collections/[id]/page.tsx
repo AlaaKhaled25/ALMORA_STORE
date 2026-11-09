@@ -62,11 +62,11 @@ export default async function CategoryPage({
   return (
     <div className="mx-auto max-w-6xl px-4 py-6 sm:px-6 sm:py-10">
       <nav className="flex flex-wrap items-center gap-2 text-xs text-brand-muted">
-        <Link href="/" className="hover:text-brand-wine">
+        <Link href="/" className="hover:text-brand-accent">
           الرئيسية
         </Link>
         <span aria-hidden="true">/</span>
-        <Link href="/products" className="hover:text-brand-wine">
+        <Link href="/shop" className="hover:text-brand-accent">
           كل المنتجات
         </Link>
         <span aria-hidden="true">/</span>
@@ -87,14 +87,14 @@ export default async function CategoryPage({
 
       <div className="mt-5">
         <Filters
-          action={`/categories/${category.id}`}
+          action={`/collections/${category.id}`}
           categories={[]}
           sort={sort}
         />
       </div>
 
       {result.products.length === 0 ? (
-        <div className="mt-8 rounded-3xl border border-brand-line bg-white p-10 text-center">
+        <div className="mt-8 rounded-3xl border border-brand-line bg-brand-surface p-10 text-center">
           <span className="mx-auto inline-flex h-16 w-16 items-center justify-center rounded-full bg-brand-wine-soft text-brand-wine">
             <svg
               viewBox="0 0 24 24"
@@ -113,7 +113,7 @@ export default async function CategoryPage({
             لا توجد منتجات في هذه الفئة حاليًا.
           </p>
           <Link
-            href="/products"
+            href="/shop"
             className="mt-5 inline-flex min-h-11 items-center justify-center rounded-full bg-brand-wine px-6 text-sm font-semibold text-white transition hover:bg-brand-wine-dark"
           >
             تصفح كل المنتجات
@@ -128,7 +128,7 @@ export default async function CategoryPage({
       )}
 
       <Pagination
-        basePath={`/categories/${category.id}`}
+        basePath={`/collections/${category.id}`}
         currentPage={result.page}
         totalPages={result.totalPages}
         query={{ sort }}

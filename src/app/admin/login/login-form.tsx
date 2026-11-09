@@ -1,7 +1,9 @@
 "use client";
 
+import Image from "next/image";
 import { useState, type FormEvent } from "react";
 import { useRouter } from "next/navigation";
+import ThemeToggle from "@/components/theme-toggle";
 
 function translateAuthError(error: unknown): string {
   if (typeof error === "object" && error !== null && "code" in error) {
@@ -76,46 +78,67 @@ export default function AdminLoginPage() {
   }
 
   return (
-    <main className="flex flex-1 items-center justify-center px-6 py-16">
+    <main className="relative flex min-h-screen flex-1 items-center justify-center overflow-hidden px-6 py-16">
+      <Image
+        src="/images/almora-admin.jpg"
+        alt=""
+        fill
+        priority
+        sizes="100vw"
+        className="object-cover"
+      />
+      <div className="absolute inset-0 bg-gradient-to-br from-brand-wine-dark/95 via-[#120c10]/90 to-black/95" />
+      <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(230,164,189,0.25),transparent_35%),radial-gradient(circle_at_bottom_left,rgba(109,31,60,0.4),transparent_40%)]" />
+
+      <div className="absolute left-4 top-4 z-20 sm:left-6 sm:top-6">
+        <ThemeToggle tone="overlay" />
+      </div>
+
       <form
         onSubmit={handleSubmit}
-        className="w-full max-w-sm space-y-5 rounded-2xl border border-black/10 p-8 shadow-sm dark:border-white/15"
+        className="relative z-10 w-full max-w-sm space-y-5 overflow-hidden rounded-[2rem] border border-white/15 bg-white/10 p-7 text-white shadow-2xl shadow-black/50 backdrop-blur-2xl sm:p-8"
       >
-        <div className="space-y-1 text-center">
-          <h1 className="text-2xl font-bold">تسجيل دخول الإدارة</h1>
-          <p className="text-sm text-zinc-600 dark:text-zinc-400">
-            ادخل ببيانات حساب المسؤول
-          </p>
+        <div
+          className="pointer-events-none absolute -right-16 -top-16 h-44 w-44 rounded-full bg-brand-wine/60 blur-3xl"
+          aria-hidden="true"
+        />
+
+        <div className="relative space-y-2 text-center">
+          <span className="mx-auto inline-flex h-12 w-12 items-center justify-center rounded-2xl border border-white/20 bg-white/10 text-xl font-extrabold tracking-[0.18em] text-white shadow-lg shadow-black/20">
+            A
+          </span>
+          <h1 className="text-2xl font-extrabold tracking-[0.16em]">ALMORA</h1>
+          <p className="text-sm text-white/65">لوحة إدارة ألمورا</p>
         </div>
 
-        <label className="block space-y-1 text-sm">
-          <span className="font-medium">البريد الإلكتروني</span>
+        <label className="block space-y-1.5 text-sm">
+          <span className="font-medium text-white/80">البريد الإلكتروني</span>
           <input
             type="email"
             value={email}
             onChange={(event) => setEmail(event.target.value)}
             required
             autoComplete="email"
-            className="w-full rounded-lg border border-black/15 bg-transparent px-3 py-2 outline-none focus:border-foreground dark:border-white/20"
+            className="w-full rounded-2xl border border-white/20 bg-white/10 px-4 py-3 text-white outline-none transition placeholder:text-white/35 focus:border-white/50 focus:ring-4 focus:ring-white/10"
           />
         </label>
 
-        <label className="block space-y-1 text-sm">
-          <span className="font-medium">كلمة المرور</span>
+        <label className="block space-y-1.5 text-sm">
+          <span className="font-medium text-white/80">كلمة المرور</span>
           <input
             type="password"
             value={password}
             onChange={(event) => setPassword(event.target.value)}
             required
             autoComplete="current-password"
-            className="w-full rounded-lg border border-black/15 bg-transparent px-3 py-2 outline-none focus:border-foreground dark:border-white/20"
+            className="w-full rounded-2xl border border-white/20 bg-white/10 px-4 py-3 text-white outline-none transition placeholder:text-white/35 focus:border-white/50 focus:ring-4 focus:ring-white/10"
           />
         </label>
 
         {error ? (
           <p
             role="alert"
-            className="rounded-lg bg-red-50 px-3 py-2 text-sm text-red-700 dark:bg-red-950/40 dark:text-red-300"
+            className="rounded-2xl border border-red-300/20 bg-red-500/15 px-3 py-2 text-sm text-red-100"
           >
             {error}
           </p>
@@ -124,7 +147,7 @@ export default function AdminLoginPage() {
         <button
           type="submit"
           disabled={loading}
-          className="w-full rounded-lg bg-foreground px-4 py-2.5 font-medium text-background transition-opacity hover:opacity-90 disabled:opacity-60"
+          className="w-full rounded-2xl bg-white px-4 py-3 font-bold text-brand-wine shadow-lg shadow-black/20 transition hover:bg-brand-wine-soft disabled:opacity-60"
         >
           {loading ? "جارٍ تسجيل الدخول..." : "دخول"}
         </button>

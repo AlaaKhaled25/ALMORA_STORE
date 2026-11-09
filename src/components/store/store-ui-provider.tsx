@@ -44,9 +44,9 @@ function makeId(): string {
 }
 
 const toastStyles: Record<ToastTone, string> = {
-  success: "border-brand-success/25 bg-white text-brand-ink",
-  error: "border-brand-danger/25 bg-white text-brand-ink",
-  info: "border-brand-wine/20 bg-white text-brand-ink",
+  success: "border-brand-success/25 bg-brand-surface text-brand-ink",
+  error: "border-brand-danger/25 bg-brand-surface text-brand-ink",
+  info: "border-brand-wine/20 bg-brand-surface text-brand-ink",
 };
 
 const toastDotStyles: Record<ToastTone, string> = {

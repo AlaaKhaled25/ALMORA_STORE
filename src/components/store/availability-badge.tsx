@@ -1,9 +1,12 @@
 import type { StoreAvailability } from "@/lib/store";
 
 const styles: Record<StoreAvailability, string> = {
-  "متوفر": "bg-emerald-50 text-emerald-700 ring-emerald-600/15",
-  "كمية محدودة": "bg-amber-50 text-amber-700 ring-amber-600/15",
-  "غير متوفر": "bg-zinc-100 text-zinc-600 ring-zinc-500/15",
+  "متوفر":
+    "bg-emerald-50 text-emerald-700 ring-emerald-600/15 dark:bg-emerald-500/10 dark:text-emerald-300 dark:ring-emerald-400/20",
+  "كمية محدودة":
+    "bg-amber-50 text-amber-700 ring-amber-600/15 dark:bg-amber-500/10 dark:text-amber-300 dark:ring-amber-400/20",
+  "غير متوفر":
+    "bg-zinc-100 text-zinc-600 ring-zinc-500/15 dark:bg-zinc-500/10 dark:text-zinc-300 dark:ring-zinc-400/20",
 };
 
 const dotStyles: Record<StoreAvailability, string> = {

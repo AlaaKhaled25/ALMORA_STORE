@@ -10,6 +10,23 @@ const nextConfig: NextConfig = {
   images: {
     remotePatterns: [{ protocol: "https", hostname: "res.cloudinary.com" }],
   },
+  async redirects() {
+    return [
+      { source: "/products", destination: "/shop", permanent: true },
+      {
+        source: "/products/:id",
+        destination: "/product/:id",
+        permanent: true,
+      },
+      { source: "/categories", destination: "/shop", permanent: true },
+      {
+        source: "/categories/:id",
+        destination: "/collections/:id",
+        permanent: true,
+      },
+      { source: "/track", destination: "/track-order", permanent: true },
+    ];
+  },
 };
 
 export default nextConfig;

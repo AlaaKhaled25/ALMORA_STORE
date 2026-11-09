@@ -10,9 +10,9 @@ export default function ProductCard({ product }: { product: StoreProduct }) {
   const isOutOfStock = product.availability === "غير متوفر";
 
   return (
-    <article className="group flex flex-col overflow-hidden rounded-3xl border border-brand-line bg-white transition duration-300 hover:-translate-y-1 hover:border-brand-wine/20 hover:shadow-xl hover:shadow-brand-ink/10">
+    <article className="group flex flex-col overflow-hidden rounded-3xl border border-brand-line bg-brand-surface transition duration-300 hover:-translate-y-1 hover:border-brand-wine/20 hover:shadow-xl hover:shadow-brand-ink/10">
       <Link
-        href={`/products/${product.id}`}
+        href={`/product/${product.id}`}
         className="flex flex-1 flex-col focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-brand-wine"
       >
         <div className="relative aspect-[4/5] overflow-hidden bg-brand-sand">
@@ -46,7 +46,7 @@ export default function ProductCard({ product }: { product: StoreProduct }) {
           <p className="text-[11px] font-semibold text-brand-muted">
             {product.categoryName}
           </p>
-          <h3 className="mt-1 line-clamp-2 min-h-14 text-base font-bold leading-7 transition-colors group-hover:text-brand-wine">
+          <h3 className="mt-1 line-clamp-2 min-h-14 text-base font-bold leading-7 transition-colors group-hover:text-brand-accent">
             {product.name}
           </h3>
           <p className="mt-3 text-lg font-extrabold text-brand-wine">

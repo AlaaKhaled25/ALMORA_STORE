@@ -65,7 +65,7 @@ export default function CopyOrderButton({
     <button
       type="button"
       onClick={handleCopy}
-      className="inline-flex min-h-11 items-center justify-center gap-2 rounded-full border border-brand-line bg-white px-5 text-sm font-semibold text-brand-ink transition hover:border-brand-wine/30 hover:bg-brand-wine-soft"
+      className="inline-flex min-h-11 items-center justify-center gap-2 rounded-full border border-brand-line bg-brand-surface px-5 text-sm font-semibold text-brand-ink transition hover:border-brand-wine/30 hover:bg-brand-wine-soft"
     >
       <svg
         viewBox="0 0 24 24"

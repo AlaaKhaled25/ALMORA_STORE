@@ -16,7 +16,7 @@ export default function WhatsAppButton({
       href={whatsappUrl(message)}
       target="_blank"
       rel="noopener noreferrer"
-      className={`inline-flex min-h-11 items-center justify-center gap-2 rounded-full border border-brand-line bg-white px-5 text-sm font-semibold text-brand-ink transition hover:border-[#128c7e]/30 hover:bg-[#128c7e]/5 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#128c7e] ${className}`}
+      className={`inline-flex min-h-11 items-center justify-center gap-2 rounded-full border border-brand-line bg-brand-surface px-5 text-sm font-semibold text-brand-ink transition hover:border-[#128c7e]/30 hover:bg-[#128c7e]/5 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#128c7e] ${className}`}
     >
       <svg
         viewBox="0 0 24 24"

@@ -23,7 +23,7 @@ const getServerSnapshot = () => "[]";
 
 function CartLineSkeleton() {
   return (
-    <div className="flex gap-4 rounded-3xl border border-brand-line bg-white p-4">
+    <div className="flex gap-4 rounded-3xl border border-brand-line bg-brand-surface p-4">
       <div className="h-24 w-24 shrink-0 animate-pulse rounded-2xl bg-brand-sand" />
       <div className="flex-1 space-y-3 py-1">
         <div className="h-4 w-2/3 animate-pulse rounded-full bg-brand-sand" />
@@ -60,7 +60,7 @@ export default function CartView() {
       <div className="mx-auto max-w-3xl px-4 py-6 sm:px-6 sm:py-10">
         <CheckoutSteps current={1} />
 
-        <div className="mt-5 rounded-[2rem] border border-brand-line bg-white p-8 text-center sm:p-12">
+        <div className="mt-5 rounded-[2rem] border border-brand-line bg-brand-surface p-8 text-center sm:p-12">
           <span className="mx-auto inline-flex h-20 w-20 items-center justify-center rounded-full bg-brand-wine-soft text-brand-wine">
             <svg
               viewBox="0 0 24 24"
@@ -84,7 +84,7 @@ export default function CartView() {
             أضف بعض المنتجات إلى السلة ثم عُد إلى هنا لإتمام الطلب.
           </p>
           <Link
-            href="/products"
+            href="/shop"
             className="mt-6 inline-flex min-h-12 items-center justify-center rounded-full bg-brand-wine px-7 text-sm font-semibold text-white transition hover:bg-brand-wine-dark"
           >
             تصفح المنتجات
@@ -108,7 +108,7 @@ export default function CartView() {
           </p>
         </div>
         <Link
-          href="/products"
+          href="/shop"
           className="inline-flex min-h-11 items-center text-sm font-semibold text-brand-wine hover:underline"
         >
           متابعة التسوق
@@ -131,11 +131,11 @@ export default function CartView() {
             return (
               <div
                 key={item.productId}
-                className="rounded-3xl border border-brand-line bg-white p-4 shadow-sm shadow-brand-ink/5"
+                className="rounded-3xl border border-brand-line bg-brand-surface p-4 shadow-sm shadow-brand-ink/5"
               >
                 <div className="flex gap-4">
                   <Link
-                    href={`/products/${item.productId}`}
+                    href={`/product/${item.productId}`}
                     className="relative h-24 w-24 shrink-0 overflow-hidden rounded-2xl bg-brand-sand"
                   >
                     {info?.imageUrl ? (
@@ -158,8 +158,8 @@ export default function CartView() {
                     <div className="flex flex-wrap items-start justify-between gap-2">
                       <div className="min-w-0">
                         <Link
-                          href={`/products/${item.productId}`}
-                          className="line-clamp-2 font-bold hover:text-brand-wine"
+                          href={`/product/${item.productId}`}
+                          className="line-clamp-2 font-bold hover:text-brand-accent"
                         >
                           {info?.name || "جارٍ التحقق من المنتج..."}
                         </Link>
@@ -259,7 +259,7 @@ export default function CartView() {
           ) : null}
         </div>
 
-        <aside className="h-fit rounded-3xl border border-brand-line bg-white p-5 shadow-sm shadow-brand-ink/5 lg:sticky lg:top-40">
+        <aside className="premium-surface h-fit rounded-3xl p-5 lg:sticky lg:top-40">
           <h2 className="text-lg font-extrabold">ملخص الطلب</h2>
 
           <div className="mt-4 space-y-3 text-sm">

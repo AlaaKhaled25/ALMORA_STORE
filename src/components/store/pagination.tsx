@@ -40,7 +40,7 @@ export default function Pagination({
       {currentPage > 1 ? (
         <Link
           href={hrefFor(currentPage - 1)}
-          className="inline-flex min-h-11 items-center rounded-full border border-brand-line bg-white px-5 font-semibold transition hover:border-brand-wine/30 hover:bg-brand-wine-soft"
+          className="inline-flex min-h-11 items-center rounded-full border border-brand-line bg-brand-surface px-5 font-semibold transition hover:border-brand-wine/30 hover:bg-brand-wine-soft"
         >
           السابق
         </Link>
@@ -57,7 +57,7 @@ export default function Pagination({
       {currentPage < totalPages ? (
         <Link
           href={hrefFor(currentPage + 1)}
-          className="inline-flex min-h-11 items-center rounded-full border border-brand-line bg-white px-5 font-semibold transition hover:border-brand-wine/30 hover:bg-brand-wine-soft"
+          className="inline-flex min-h-11 items-center rounded-full border border-brand-line bg-brand-surface px-5 font-semibold transition hover:border-brand-wine/30 hover:bg-brand-wine-soft"
         >
           التالي
         </Link>

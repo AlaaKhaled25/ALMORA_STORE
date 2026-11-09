@@ -32,31 +32,31 @@ function readErrorMessage(body: unknown): string {
 
 function statusBadgeClass(status: OrderStatus): string {
   if (status === "delivered") {
-    return "bg-emerald-50 text-emerald-700 ring-emerald-600/15";
+    return "bg-emerald-50 text-emerald-700 ring-emerald-600/15 dark:bg-emerald-500/10 dark:text-emerald-300 dark:ring-emerald-400/20";
   }
   if (status === "cancelled") {
-    return "bg-red-50 text-red-700 ring-red-600/15";
+    return "bg-red-50 text-red-700 ring-red-600/15 dark:bg-red-500/10 dark:text-red-300 dark:ring-red-400/20";
   }
   if (status === "shipped" || status === "processing") {
-    return "bg-blue-50 text-blue-700 ring-blue-600/15";
+    return "bg-blue-50 text-blue-700 ring-blue-600/15 dark:bg-blue-500/10 dark:text-blue-300 dark:ring-blue-400/20";
   }
-  return "bg-amber-50 text-amber-700 ring-amber-600/15";
+  return "bg-amber-50 text-amber-700 ring-amber-600/15 dark:bg-amber-500/10 dark:text-amber-300 dark:ring-amber-400/20";
 }
 
 function statusIconClass(status: OrderStatus): string {
   if (status === "delivered") {
-    return "bg-emerald-50 text-emerald-700";
+    return "bg-emerald-50 text-emerald-700 dark:bg-emerald-500/10 dark:text-emerald-300";
   }
   if (status === "cancelled") {
-    return "bg-red-50 text-red-700";
+    return "bg-red-50 text-red-700 dark:bg-red-500/10 dark:text-red-300";
   }
   if (status === "shipped" || status === "processing") {
-    return "bg-blue-50 text-blue-700";
+    return "bg-blue-50 text-blue-700 dark:bg-blue-500/10 dark:text-blue-300";
   }
   if (status === "confirmed") {
     return "bg-brand-success/10 text-brand-success";
   }
-  return "bg-amber-50 text-amber-700";
+  return "bg-amber-50 text-amber-700 dark:bg-amber-500/10 dark:text-amber-300";
 }
 
 function StatusIcon({ status }: { status: OrderStatus }) {
@@ -120,9 +120,9 @@ const inputClass =
 function TrackSkeleton() {
   return (
     <div className="mt-6 space-y-4" aria-hidden="true">
-      <div className="h-32 animate-pulse rounded-3xl border border-brand-line bg-white" />
-      <div className="h-56 animate-pulse rounded-3xl border border-brand-line bg-white" />
-      <div className="h-40 animate-pulse rounded-3xl border border-brand-line bg-white" />
+      <div className="h-32 animate-pulse rounded-3xl border border-brand-line bg-brand-surface" />
+      <div className="h-56 animate-pulse rounded-3xl border border-brand-line bg-brand-surface" />
+      <div className="h-40 animate-pulse rounded-3xl border border-brand-line bg-brand-surface" />
     </div>
   );
 }
@@ -203,7 +203,7 @@ export default function TrackView() {
       <form
         onSubmit={handleSubmit}
         aria-busy={loading}
-        className="mt-5 rounded-3xl border border-brand-line bg-white p-5 shadow-sm shadow-brand-ink/5"
+        className="mt-5 rounded-3xl border border-brand-line bg-brand-surface p-5 shadow-sm shadow-brand-ink/5"
       >
         <div className="grid gap-4 sm:grid-cols-2">
           <label className="block space-y-1.5 text-sm">
@@ -260,7 +260,7 @@ export default function TrackView() {
 
       {order ? (
         <div className="mt-6 space-y-5">
-          <section className="rounded-3xl border border-brand-line bg-white p-5 shadow-sm shadow-brand-ink/5">
+          <section className="rounded-3xl border border-brand-line bg-brand-surface p-5 shadow-sm shadow-brand-ink/5">
             <div className="flex flex-wrap items-start justify-between gap-3">
               <div>
                 <p className="text-xs font-semibold text-brand-muted">
@@ -282,9 +282,9 @@ export default function TrackView() {
           </section>
 
           {order.status === "cancelled" ? (
-            <section className="rounded-3xl border border-red-200 bg-red-50 p-5 text-red-800">
+            <section className="rounded-3xl border border-red-200 bg-red-50 p-5 text-red-800 dark:border-red-400/20 dark:bg-red-500/10 dark:text-red-200">
               <div className="flex items-start gap-3">
-                <span className="inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-white text-red-600">
+                <span className="inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-brand-surface text-red-600 dark:text-red-300">
                   <StatusIcon status="cancelled" />
                 </span>
                 <div>
@@ -305,7 +305,7 @@ export default function TrackView() {
             </section>
           ) : null}
 
-          <section className="rounded-3xl border border-brand-line bg-white p-5 shadow-sm shadow-brand-ink/5">
+          <section className="rounded-3xl border border-brand-line bg-brand-surface p-5 shadow-sm shadow-brand-ink/5">
             <h2 className="font-extrabold">حالة الطلب</h2>
             <ol className="mt-5">
               {order.statusHistory.map((event, index) => {
@@ -339,7 +339,7 @@ export default function TrackView() {
             </ol>
           </section>
 
-          <section className="rounded-3xl border border-brand-line bg-white p-5 shadow-sm shadow-brand-ink/5">
+          <section className="rounded-3xl border border-brand-line bg-brand-surface p-5 shadow-sm shadow-brand-ink/5">
             <h2 className="font-extrabold">منتجات الطلب</h2>
             <ul className="mt-3 space-y-3 text-sm">
               {order.items.map((item, index) => (
@@ -379,7 +379,7 @@ export default function TrackView() {
             </div>
           </section>
 
-          <section className="rounded-3xl border border-brand-line bg-white p-5 text-sm shadow-sm shadow-brand-ink/5">
+          <section className="rounded-3xl border border-brand-line bg-brand-surface p-5 text-sm shadow-sm shadow-brand-ink/5">
             <h2 className="font-extrabold">الدفع والتوصيل</h2>
             <div className="mt-3 space-y-2 leading-7 text-brand-muted">
               <p>

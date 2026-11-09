@@ -1,5 +1,6 @@
 import Link from "next/link";
 import CartLink from "@/components/store/cart-link";
+import ThemeToggle from "@/components/theme-toggle";
 import { BRAND } from "@/lib/brand";
 import { getStoreCategories } from "@/lib/store";
 
@@ -7,7 +8,7 @@ export default async function StoreHeader() {
   const categories = await getStoreCategories();
 
   return (
-    <header className="sticky top-0 z-30 border-b border-brand-line/80 bg-brand-cream/95 backdrop-blur-md">
+    <header className="sticky top-0 z-30 border-b border-brand-line/70 bg-brand-cream/90 shadow-[0_18px_55px_-42px_rgba(38,26,31,0.55)] backdrop-blur-xl">
       <div className="mx-auto max-w-6xl px-4 sm:px-6">
         <div className="flex items-center gap-3 py-3">
           <Link
@@ -42,7 +43,7 @@ export default async function StoreHeader() {
           </Link>
 
           <form
-            action="/products"
+            action="/shop"
             method="get"
             role="search"
             className="hidden flex-1 items-center gap-2 sm:flex"
@@ -69,7 +70,7 @@ export default async function StoreHeader() {
                 name="q"
                 placeholder="ابحث عن منتج..."
                 aria-label="بحث عن منتج"
-                className="h-11 w-full rounded-full border border-brand-line bg-white/80 py-2 pe-11 ps-4 text-sm outline-none transition placeholder:text-brand-muted/70 focus:border-brand-wine focus:ring-4 focus:ring-brand-wine/10"
+                className="h-11 w-full rounded-full border border-brand-line bg-brand-surface/80 py-2 pe-11 ps-4 text-sm outline-none transition placeholder:text-brand-muted/70 focus:border-brand-wine focus:ring-4 focus:ring-brand-wine/10"
               />
             </div>
             <button
@@ -80,11 +81,14 @@ export default async function StoreHeader() {
             </button>
           </form>
 
-          <CartLink className="ms-auto sm:ms-0" />
+          <div className="ms-auto flex items-center gap-2 sm:ms-0">
+            <ThemeToggle />
+            <CartLink />
+          </div>
         </div>
 
         <form
-          action="/products"
+          action="/shop"
           method="get"
           role="search"
           className="flex items-center gap-2 pb-3 sm:hidden"
@@ -111,7 +115,7 @@ export default async function StoreHeader() {
               name="q"
               placeholder="ابحث عن منتج..."
               aria-label="بحث عن منتج"
-              className="h-11 w-full rounded-full border border-brand-line bg-white/80 py-2 pe-11 ps-4 text-sm outline-none transition placeholder:text-brand-muted/70 focus:border-brand-wine focus:ring-4 focus:ring-brand-wine/10"
+              className="h-11 w-full rounded-full border border-brand-line bg-brand-surface/80 py-2 pe-11 ps-4 text-sm outline-none transition placeholder:text-brand-muted/70 focus:border-brand-wine focus:ring-4 focus:ring-brand-wine/10"
             />
           </div>
           <button
@@ -139,22 +143,22 @@ export default async function StoreHeader() {
           className="flex gap-2 overflow-x-auto pb-3 text-sm [scrollbar-width:none]"
         >
           <Link
-            href="/products"
+            href="/shop"
             className="inline-flex min-h-11 shrink-0 items-center rounded-full bg-brand-wine px-4 font-semibold text-white transition hover:bg-brand-wine-dark"
           >
             كل المنتجات
           </Link>
           <Link
-            href="/track"
-            className="inline-flex min-h-11 shrink-0 items-center rounded-full border border-brand-line bg-white/70 px-4 font-medium text-brand-ink transition hover:border-brand-wine/30 hover:bg-brand-wine-soft"
+            href="/track-order"
+            className="inline-flex min-h-11 shrink-0 items-center rounded-full border border-brand-line bg-brand-surface/70 px-4 font-medium text-brand-ink transition hover:border-brand-wine/30 hover:bg-brand-wine-soft"
           >
             تتبع طلبك
           </Link>
           {categories.map((category) => (
             <Link
               key={category.id}
-              href={`/categories/${category.id}`}
-              className="inline-flex min-h-11 shrink-0 items-center rounded-full border border-brand-line bg-white/70 px-4 font-medium text-brand-ink transition hover:border-brand-wine/30 hover:bg-brand-wine-soft"
+              href={`/collections/${category.id}`}
+              className="inline-flex min-h-11 shrink-0 items-center rounded-full border border-brand-line bg-brand-surface/70 px-4 font-medium text-brand-ink transition hover:border-brand-wine/30 hover:bg-brand-wine-soft"
             >
               {category.name}
             </Link>

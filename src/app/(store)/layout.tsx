@@ -27,10 +27,22 @@ export default async function StoreLayout({
 
   return (
     <StoreUIProvider>
-      <div className="flex min-h-screen flex-col bg-brand-cream text-brand-ink">
-        <StoreHeader />
-        <main className="flex-1">{children}</main>
-        <StoreFooter />
+      <div className="relative flex min-h-screen flex-col bg-brand-cream text-brand-ink">
+        <div
+          className="pointer-events-none fixed inset-0 z-0 overflow-hidden"
+          aria-hidden="true"
+        >
+          <div className="ambient-orb absolute -right-24 top-[-8rem] h-[26rem] w-[26rem] rounded-full bg-brand-wine/30" />
+          <div className="ambient-orb absolute -left-32 top-1/3 h-[22rem] w-[22rem] rounded-full bg-brand-wine-soft" />
+          <div className="ambient-orb absolute bottom-[-10rem] right-1/3 h-[24rem] w-[24rem] rounded-full bg-brand-sand" />
+          <div className="premium-grid absolute inset-0 opacity-40" />
+        </div>
+
+        <div className="relative z-10 flex min-h-screen flex-col">
+          <StoreHeader />
+          <main className="flex-1">{children}</main>
+          <StoreFooter />
+        </div>
       </div>
     </StoreUIProvider>
   );

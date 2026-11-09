@@ -25,7 +25,7 @@ export default function ProductPurchase({
       <div className="space-y-4">
         <div className="flex flex-wrap items-center gap-3">
           <span className="text-sm font-semibold">الكمية</span>
-          <div className="flex items-center rounded-full border border-brand-line bg-white p-1">
+          <div className="flex items-center rounded-full border border-brand-line bg-brand-surface p-1">
             <button
               type="button"
               onClick={() => setQuantity((value) => Math.max(1, value - 1))}
@@ -66,7 +66,7 @@ export default function ProductPurchase({
         />
       </div>
 
-      <div className="fixed inset-x-0 bottom-0 z-40 border-t border-brand-line bg-white/95 p-3 pb-safe shadow-[0_-8px_30px_rgba(38,26,31,0.08)] backdrop-blur-md lg:hidden">
+      <div className="fixed inset-x-0 bottom-0 z-40 border-t border-brand-line bg-brand-surface/95 p-3 pb-safe shadow-[0_-8px_30px_rgba(38,26,31,0.08)] backdrop-blur-md lg:hidden">
         <div className="mx-auto flex max-w-6xl items-center gap-3">
           <div className="min-w-0 shrink-0">
             <p className="text-[11px] text-brand-muted">السعر</p>

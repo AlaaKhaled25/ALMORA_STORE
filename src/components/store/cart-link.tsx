@@ -44,7 +44,7 @@ export default function CartLink({ className = "" }: { className?: string }) {
       onClick={openCartDrawer}
       aria-label={`فتح السلة (${count} قطعة)`}
       title="السلة"
-      className={`relative inline-flex h-11 w-11 items-center justify-center rounded-full border border-brand-line bg-white/80 text-brand-ink transition hover:border-brand-wine/30 hover:bg-brand-wine-soft focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-wine ${bump ? "animate-cart-bump" : ""} ${className}`}
+      className={`relative inline-flex h-11 w-11 items-center justify-center rounded-full border border-brand-line bg-brand-surface/80 text-brand-ink transition hover:border-brand-wine/30 hover:bg-brand-wine-soft focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-wine ${bump ? "animate-cart-bump" : ""} ${className}`}
     >
       <svg
         viewBox="0 0 24 24"

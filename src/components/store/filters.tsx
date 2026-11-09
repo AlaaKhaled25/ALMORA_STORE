@@ -25,7 +25,7 @@ export default function Filters({
     <form
       action={action}
       method="get"
-      className="rounded-3xl border border-brand-line bg-white p-4 shadow-sm shadow-brand-ink/5"
+      className="rounded-3xl border border-brand-line bg-brand-surface p-4 shadow-sm shadow-brand-ink/5"
     >
       <div className="grid gap-3 sm:grid-cols-[1fr_1fr_auto] sm:items-end">
         {search ? <input type="hidden" name="q" value={search} /> : null}

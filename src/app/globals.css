@@ -1,8 +1,49 @@
 @import "tailwindcss";
 
+@custom-variant dark (&:where(.dark, .dark *));
+
 :root {
   --background: #ffffff;
   --foreground: #171717;
+  --brand-wine: #6d1f3c;
+  --brand-wine-dark: #4b1329;
+  --brand-wine-soft: #f6eaf0;
+  --brand-cream: #fbf8f5;
+  --brand-sand: #f2ebe5;
+  --brand-surface: #ffffff;
+  --brand-ink: #261a1f;
+  --brand-muted: #74666c;
+  --brand-line: #e8ddd7;
+  --brand-success: #1d7a5c;
+  --brand-warning: #9a5b13;
+  --brand-danger: #b4233b;
+  --brand-accent: #6d1f3c;
+  --brand-glow: rgba(109, 31, 60, 0.22);
+  color-scheme: light;
+}
+
+.dark {
+  --background: #08060a;
+  --foreground: #f7eff3;
+  --brand-wine: #8f2f53;
+  --brand-wine-dark: #6f203e;
+  --brand-wine-soft: #2a1721;
+  --brand-cream: #0b080d;
+  --brand-sand: #171119;
+  --brand-surface: #1a131d;
+  --brand-ink: #f7eff3;
+  --brand-muted: #b9a7b1;
+  --brand-line: #352630;
+  --brand-success: #57c9a0;
+  --brand-warning: #e0a45b;
+  --brand-danger: #f07a8c;
+  --brand-accent: #e6a4bd;
+  --brand-glow: rgba(230, 164, 189, 0.28);
+  color-scheme: dark;
+}
+
+.dark .text-brand-wine {
+  color: var(--brand-accent);
 }
 
 @theme inline {
@@ -22,23 +63,74 @@
   --color-brand-success: var(--brand-success);
   --color-brand-warning: var(--brand-warning);
   --color-brand-danger: var(--brand-danger);
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+  --color-brand-accent: var(--brand-accent);
 }
 
 body {
   background: var(--background);
   color: var(--foreground);
   font-family: var(--font-cairo), system-ui, "Segoe UI", Tahoma, sans-serif;
+  transition:
+    background-color 300ms ease,
+    color 300ms ease;
 }
 
 html {
   scroll-behavior: smooth;
+}
+
+.premium-surface {
+  background:
+    linear-gradient(
+      145deg,
+      color-mix(in srgb, var(--brand-surface) 92%, white 8%) 0%,
+      var(--brand-surface) 58%,
+      color-mix(in srgb, var(--brand-cream) 82%, var(--brand-surface)) 100%
+    );
+  border: 1px solid color-mix(in srgb, var(--brand-line) 82%, transparent);
+  box-shadow:
+    0 30px 80px -52px color-mix(in srgb, var(--brand-ink) 55%, transparent),
+    inset 0 1px 0 color-mix(in srgb, white 55%, transparent);
+}
+
+.dark .premium-surface {
+  box-shadow:
+    0 34px 90px -48px rgba(0, 0, 0, 0.85),
+    inset 0 1px 0 rgba(255, 255, 255, 0.06);
+}
+
+.glass-panel {
+  background: color-mix(in srgb, var(--brand-surface) 72%, transparent);
+  border: 1px solid color-mix(in srgb, var(--brand-line) 72%, transparent);
+  box-shadow: 0 24px 70px -42px color-mix(in srgb, var(--brand-ink) 42%, transparent);
+  backdrop-filter: blur(20px);
+}
+
+.glow-soft {
+  box-shadow:
+    0 0 0 1px color-mix(in srgb, var(--brand-accent) 18%, transparent),
+    0 0 50px -18px color-mix(in srgb, var(--brand-accent) 45%, transparent);
+}
+
+.text-glow {
+  text-shadow: 0 0 32px color-mix(in srgb, var(--brand-accent) 35%, transparent);
+}
+
+.ambient-orb {
+  filter: blur(90px);
+  opacity: 0.42;
+}
+
+.dark .ambient-orb {
+  opacity: 0.3;
+}
+
+.premium-grid {
+  background-image:
+    linear-gradient(to right, color-mix(in srgb, var(--brand-line) 35%, transparent) 1px, transparent 1px),
+    linear-gradient(to bottom, color-mix(in srgb, var(--brand-line) 35%, transparent) 1px, transparent 1px);
+  background-size: 42px 42px;
+  mask-image: radial-gradient(circle at center, black 25%, transparent 78%);
 }
 
 ::selection {

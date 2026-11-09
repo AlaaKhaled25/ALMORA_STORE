@@ -1,6 +1,6 @@
 function ProductCardSkeleton() {
   return (
-    <div className="overflow-hidden rounded-3xl border border-brand-line bg-white">
+    <div className="overflow-hidden rounded-3xl border border-brand-line bg-brand-surface">
       <div className="aspect-[4/5] animate-pulse bg-brand-sand" />
       <div className="space-y-3 p-4">
         <div className="h-3 w-1/3 animate-pulse rounded-full bg-brand-sand" />
@@ -41,7 +41,7 @@ export function StorePageSkeleton() {
         {[0, 1, 2].map((item) => (
           <div
             key={item}
-            className="h-24 animate-pulse rounded-2xl border border-brand-line bg-white"
+            className="h-24 animate-pulse rounded-2xl border border-brand-line bg-brand-surface"
           />
         ))}
       </div>
@@ -50,7 +50,7 @@ export function StorePageSkeleton() {
         {[0, 1, 2, 3].map((item) => (
           <div
             key={item}
-            className="h-32 animate-pulse rounded-3xl border border-brand-line bg-white"
+            className="h-32 animate-pulse rounded-3xl border border-brand-line bg-brand-surface"
           />
         ))}
       </div>
@@ -90,7 +90,7 @@ export function ProductDetailSkeleton() {
           <div className="h-4 w-24 animate-pulse rounded-full bg-brand-sand" />
           <div className="h-10 w-4/5 animate-pulse rounded-full bg-brand-sand" />
           <div className="h-8 w-40 animate-pulse rounded-full bg-brand-sand" />
-          <div className="h-40 animate-pulse rounded-3xl border border-brand-line bg-white" />
+          <div className="h-40 animate-pulse rounded-3xl border border-brand-line bg-brand-surface" />
           <div className="h-28 animate-pulse rounded-3xl bg-brand-sand" />
           <div className="h-11 w-full animate-pulse rounded-full bg-brand-sand" />
         </div>

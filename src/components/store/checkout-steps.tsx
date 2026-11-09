@@ -12,7 +12,7 @@ export default function CheckoutSteps({
   return (
     <ol
       aria-label="خطوات إتمام الطلب"
-      className="flex items-center gap-2 rounded-2xl border border-brand-line bg-white/70 px-3 py-2.5 text-xs"
+      className="flex items-center gap-2 rounded-2xl border border-brand-line bg-brand-surface/70 px-3 py-2.5 text-xs"
     >
       {steps.map((step, index) => {
         const isDone = step.number < current;
