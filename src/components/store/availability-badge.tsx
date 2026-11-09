@@ -1,23 +1,32 @@
 import type { StoreAvailability } from "@/lib/store";
 
 const styles: Record<StoreAvailability, string> = {
-  "متوفر":
-    "bg-green-50 text-green-700 dark:bg-green-950/40 dark:text-green-300",
-  "كمية محدودة":
-    "bg-amber-50 text-amber-700 dark:bg-amber-950/40 dark:text-amber-300",
-  "غير متوفر":
-    "bg-zinc-100 text-zinc-600 dark:bg-zinc-800 dark:text-zinc-300",
+  "متوفر": "bg-emerald-50 text-emerald-700 ring-emerald-600/15",
+  "كمية محدودة": "bg-amber-50 text-amber-700 ring-amber-600/15",
+  "غير متوفر": "bg-zinc-100 text-zinc-600 ring-zinc-500/15",
+};
+
+const dotStyles: Record<StoreAvailability, string> = {
+  "متوفر": "bg-emerald-500",
+  "كمية محدودة": "bg-amber-500",
+  "غير متوفر": "bg-zinc-400",
 };
 
 export default function AvailabilityBadge({
   availability,
+  className = "",
 }: {
   availability: StoreAvailability;
+  className?: string;
 }) {
   return (
     <span
-      className={`inline-block rounded-full px-2.5 py-1 text-xs font-medium ${styles[availability]}`}
+      className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-[11px] font-semibold ring-1 ring-inset ${styles[availability]} ${className}`}
     >
+      <span
+        className={`h-1.5 w-1.5 rounded-full ${dotStyles[availability]}`}
+        aria-hidden="true"
+      />
       {availability}
     </span>
   );

@@ -1,18 +1,24 @@
 import type { MetadataRoute } from "next";
+import { BRAND } from "@/lib/brand";
 
 export default function manifest(): MetadataRoute.Manifest {
   return {
-    name: "متجري — متجر إلكتروني",
-    short_name: "متجري",
-    description: "متجر إلكتروني بسيط — الدفع عند الاستلام",
+    name: `${BRAND.name} — ${BRAND.tagline}`,
+    short_name: BRAND.name,
+    description: BRAND.description,
     lang: "ar",
     dir: "rtl",
     start_url: "/",
     scope: "/",
     display: "standalone",
-    background_color: "#ffffff",
-    theme_color: "#171717",
+    background_color: BRAND.colors.cream,
+    theme_color: BRAND.colors.wine,
     icons: [
+      {
+        src: "/icon.svg",
+        sizes: "any",
+        type: "image/svg+xml",
+      },
       {
         src: "/icons/icon-192.png",
         sizes: "192x192",

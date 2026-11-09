@@ -5,7 +5,7 @@ import CheckoutView from "./checkout-view";
 export const instant = false;
 
 export const metadata: Metadata = {
-  title: "إتمام الطلب | متجري",
+  title: "إتمام الطلب",
   description: "أدخل بيانات التوصيل ثم أكّد الطلب مع الدفع عند الاستلام.",
 };
 

@@ -1,11 +1,13 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import { useStoreUI } from "@/components/store/store-ui-provider";
 import { addToCart, rememberCartPrice } from "@/lib/cart";
 
 type AddToCartButtonProps = {
   productId: string;
   price: number;
+  quantity?: number;
   disabled?: boolean;
   variant?: "full" | "small";
 };
@@ -13,9 +15,11 @@ type AddToCartButtonProps = {
 export default function AddToCartButton({
   productId,
   price,
+  quantity = 1,
   disabled = false,
   variant = "full",
 }: AddToCartButtonProps) {
+  const { openCartDrawer, showToast } = useStoreUI();
   const [status, setStatus] = useState<"idle" | "added" | "error">("idle");
   const [message, setMessage] = useState("");
   const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -27,7 +31,7 @@ export default function AddToCartButton({
   }, []);
 
   function handleClick() {
-    const result = addToCart(productId, 1);
+    const result = addToCart(productId, quantity);
 
     if (!result.ok) {
       setStatus("error");
@@ -38,6 +42,8 @@ export default function AddToCartButton({
     rememberCartPrice(productId, price);
     setStatus("added");
     setMessage("");
+    showToast("تمت إضافة المنتج إلى السلة.");
+    openCartDrawer();
 
     if (timerRef.current) clearTimeout(timerRef.current);
     timerRef.current = setTimeout(() => setStatus("idle"), 1500);
@@ -50,13 +56,13 @@ export default function AddToCartButton({
         ? "تمت الإضافة"
         : "تمت الإضافة إلى السلة"
       : variant === "small"
-        ? "أضف"
+        ? "أضف للسلة"
         : "أضف إلى السلة";
 
   const buttonClass =
     variant === "small"
-      ? "w-full rounded-full bg-foreground px-3 py-2 text-sm font-medium text-background transition-opacity hover:opacity-90 disabled:cursor-not-allowed disabled:bg-zinc-200 disabled:text-zinc-500 dark:disabled:bg-zinc-800 dark:disabled:text-zinc-400"
-      : "w-full rounded-full bg-foreground px-6 py-3 font-medium text-background transition-opacity hover:opacity-90 disabled:cursor-not-allowed disabled:bg-zinc-200 disabled:text-zinc-500 dark:disabled:bg-zinc-800 dark:disabled:text-zinc-400";
+      ? "min-h-11 w-full rounded-full bg-brand-wine px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-brand-wine-dark active:scale-[0.98] disabled:cursor-not-allowed disabled:bg-brand-sand disabled:text-brand-muted"
+      : "min-h-12 w-full rounded-full bg-brand-wine px-6 py-3 font-semibold text-white shadow-sm shadow-brand-wine/20 transition hover:bg-brand-wine-dark active:scale-[0.99] disabled:cursor-not-allowed disabled:bg-brand-sand disabled:text-brand-muted disabled:shadow-none";
 
   return (
     <div className="w-full">
@@ -71,14 +77,7 @@ export default function AddToCartButton({
 
       <div aria-live="polite">
         {status === "error" && message ? (
-          <p className="mt-1 text-xs text-red-600 dark:text-red-400">
-            {message}
-          </p>
-        ) : null}
-        {variant === "full" && status === "added" ? (
-          <p className="mt-2 text-center text-xs text-green-700 dark:text-green-400">
-            تمت الإضافة إلى السلة.
-          </p>
+          <p className="mt-1 text-xs text-brand-danger">{message}</p>
         ) : null}
       </div>
     </div>

@@ -5,7 +5,7 @@ import CartView from "./cart-view";
 export const instant = false;
 
 export const metadata: Metadata = {
-  title: "سلة التسوق | متجري",
+  title: "سلة التسوق",
   description: "راجع منتجات سلة التسوق وتأكد من الأسعار قبل إتمام الطلب.",
 };
 

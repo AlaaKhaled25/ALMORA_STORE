@@ -32,19 +32,100 @@ function readErrorMessage(body: unknown): string {
 
 function statusBadgeClass(status: OrderStatus): string {
   if (status === "delivered") {
-    return "bg-green-50 text-green-700 dark:bg-green-950/40 dark:text-green-300";
+    return "bg-emerald-50 text-emerald-700 ring-emerald-600/15";
   }
   if (status === "cancelled") {
-    return "bg-red-50 text-red-700 dark:bg-red-950/40 dark:text-red-300";
+    return "bg-red-50 text-red-700 ring-red-600/15";
   }
   if (status === "shipped" || status === "processing") {
-    return "bg-blue-50 text-blue-700 dark:bg-blue-950/40 dark:text-blue-300";
+    return "bg-blue-50 text-blue-700 ring-blue-600/15";
   }
-  return "bg-amber-50 text-amber-700 dark:bg-amber-950/40 dark:text-amber-300";
+  return "bg-amber-50 text-amber-700 ring-amber-600/15";
+}
+
+function statusIconClass(status: OrderStatus): string {
+  if (status === "delivered") {
+    return "bg-emerald-50 text-emerald-700";
+  }
+  if (status === "cancelled") {
+    return "bg-red-50 text-red-700";
+  }
+  if (status === "shipped" || status === "processing") {
+    return "bg-blue-50 text-blue-700";
+  }
+  if (status === "confirmed") {
+    return "bg-brand-success/10 text-brand-success";
+  }
+  return "bg-amber-50 text-amber-700";
+}
+
+function StatusIcon({ status }: { status: OrderStatus }) {
+  return (
+    <svg
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.7"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      className="h-5 w-5"
+      aria-hidden="true"
+    >
+      {status === "pending" ? (
+        <>
+          <circle cx="12" cy="12" r="8" />
+          <path d="M12 8v4l2.5 2" />
+        </>
+      ) : null}
+      {status === "confirmed" ? (
+        <>
+          <circle cx="12" cy="12" r="8" />
+          <path d="m8.5 12 2.3 2.3 4.7-4.7" />
+        </>
+      ) : null}
+      {status === "processing" ? (
+        <>
+          <path d="M4 7h16v13H4z" />
+          <path d="M8 7V5a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" />
+          <path d="M4 12h16" />
+        </>
+      ) : null}
+      {status === "shipped" ? (
+        <>
+          <path d="M3 7h11v9H3z" />
+          <path d="M14 10h4l3 3v3h-7z" />
+          <circle cx="7" cy="18" r="1.5" />
+          <circle cx="17" cy="18" r="1.5" />
+        </>
+      ) : null}
+      {status === "delivered" ? (
+        <>
+          <path d="m4 11 5 5L20 5" />
+          <path d="M20 12v7H4v-7" />
+        </>
+      ) : null}
+      {status === "cancelled" ? (
+        <>
+          <circle cx="12" cy="12" r="8" />
+          <path d="m9 9 6 6M15 9l-6 6" />
+        </>
+      ) : null}
+    </svg>
+  );
 }
 
 const inputClass =
-  "w-full rounded-xl border border-black/15 bg-transparent px-3 py-2 text-sm outline-none focus:border-foreground dark:border-white/20";
+  "h-12 w-full rounded-2xl border border-brand-line bg-brand-cream/50 px-4 text-sm outline-none transition placeholder:text-brand-muted/60 focus:border-brand-wine focus:ring-4 focus:ring-brand-wine/10";
+
+function TrackSkeleton() {
+  return (
+    <div className="mt-6 space-y-4" aria-hidden="true">
+      <div className="h-32 animate-pulse rounded-3xl border border-brand-line bg-white" />
+      <div className="h-56 animate-pulse rounded-3xl border border-brand-line bg-white" />
+      <div className="h-40 animate-pulse rounded-3xl border border-brand-line bg-white" />
+    </div>
+  );
+}
 
 export default function TrackView() {
   const lastOrderNumber = useSyncExternalStore(
@@ -53,7 +134,6 @@ export default function TrackView() {
     getServerLastOrder,
   );
 
-  // null means "use the remembered order number"; typing switches to local state.
   const [orderNumberInput, setOrderNumberInput] = useState<string | null>(null);
   const [phone, setPhone] = useState("");
   const [order, setOrder] = useState<TrackedOrder | null>(null);
@@ -107,19 +187,27 @@ export default function TrackView() {
   }
 
   return (
-    <div className="mx-auto max-w-3xl px-4 py-8 sm:px-6">
-      <h1 className="text-2xl font-bold sm:text-3xl">تتبع طلبك</h1>
-      <p className="mt-2 text-sm text-zinc-600 dark:text-zinc-400">
-        أدخل رقم الطلب ورقم الهاتف الذي استخدمته عند الطلب.
-      </p>
+    <div className="mx-auto max-w-3xl px-4 py-6 sm:px-6 sm:py-10">
+      <div>
+        <p className="text-xs font-bold uppercase tracking-[0.18em] text-brand-wine">
+          متابعة الطلب
+        </p>
+        <h1 className="mt-1 text-3xl font-extrabold sm:text-4xl">
+          تتبع طلبك
+        </h1>
+        <p className="mt-2 text-sm leading-7 text-brand-muted">
+          أدخل رقم الطلب ورقم الهاتف الذي استخدمته عند الطلب.
+        </p>
+      </div>
 
       <form
         onSubmit={handleSubmit}
-        className="mt-5 rounded-2xl border border-black/10 p-5 dark:border-white/15"
+        aria-busy={loading}
+        className="mt-5 rounded-3xl border border-brand-line bg-white p-5 shadow-sm shadow-brand-ink/5"
       >
         <div className="grid gap-4 sm:grid-cols-2">
-          <label className="block space-y-1 text-sm">
-            <span className="font-medium">رقم الطلب</span>
+          <label className="block space-y-1.5 text-sm">
+            <span className="font-semibold">رقم الطلب</span>
             <input
               type="text"
               value={orderNumber}
@@ -131,8 +219,8 @@ export default function TrackView() {
             />
           </label>
 
-          <label className="block space-y-1 text-sm">
-            <span className="font-medium">رقم الهاتف</span>
+          <label className="block space-y-1.5 text-sm">
+            <span className="font-semibold">رقم الهاتف</span>
             <input
               type="tel"
               inputMode="tel"
@@ -149,7 +237,7 @@ export default function TrackView() {
         {error ? (
           <p
             aria-live="polite"
-            className="mt-4 rounded-xl bg-red-50 p-3 text-sm text-red-700 dark:bg-red-950/40 dark:text-red-300"
+            className="mt-4 rounded-xl bg-brand-danger/5 p-3 text-sm text-brand-danger"
           >
             {error}
           </p>
@@ -158,33 +246,35 @@ export default function TrackView() {
         <button
           type="submit"
           disabled={loading}
-          className="mt-5 w-full rounded-full bg-foreground px-6 py-3 font-medium text-background transition-opacity hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-60"
+          className="mt-5 min-h-12 w-full rounded-full bg-brand-wine px-6 font-semibold text-white transition hover:bg-brand-wine-dark disabled:cursor-not-allowed disabled:opacity-60"
         >
           {loading ? "جارٍ البحث..." : "تتبع الطلب"}
         </button>
 
-        <p className="mt-3 text-center text-xs text-zinc-500 dark:text-zinc-400">
+        <p className="mt-3 text-center text-xs text-brand-muted">
           لا نخزّن رقم الهاتف في المتصفح. يُستخدم فقط للتحقق من الطلب.
         </p>
       </form>
 
+      {loading && !order ? <TrackSkeleton /> : null}
+
       {order ? (
         <div className="mt-6 space-y-5">
-          <section className="rounded-2xl border border-black/10 p-5 dark:border-white/15">
+          <section className="rounded-3xl border border-brand-line bg-white p-5 shadow-sm shadow-brand-ink/5">
             <div className="flex flex-wrap items-start justify-between gap-3">
               <div>
-                <p className="text-sm text-zinc-600 dark:text-zinc-400">
+                <p className="text-xs font-semibold text-brand-muted">
                   رقم الطلب
                 </p>
-                <p className="font-bold" dir="ltr">
+                <p className="mt-1 font-extrabold text-brand-wine" dir="ltr">
                   {order.orderNumber}
                 </p>
-                <p className="mt-1 text-xs text-zinc-600 dark:text-zinc-400">
+                <p className="mt-1 text-xs text-brand-muted">
                   تاريخ الطلب: {formatDateTime(order.createdAt)}
                 </p>
               </div>
               <span
-                className={`inline-block rounded-full px-3 py-1 text-sm font-medium ${statusBadgeClass(order.status)}`}
+                className={`inline-flex items-center rounded-full px-3 py-1.5 text-sm font-semibold ring-1 ring-inset ${statusBadgeClass(order.status)}`}
               >
                 {order.statusLabel}
               </span>
@@ -192,43 +282,54 @@ export default function TrackView() {
           </section>
 
           {order.status === "cancelled" ? (
-            <section className="rounded-2xl border border-red-200 bg-red-50 p-5 text-red-800 dark:border-red-900 dark:bg-red-950/40 dark:text-red-200">
-              <h2 className="font-bold">
-                {order.cancellation ? "تم إلغاء طلبك" : "تم إلغاء الطلب"}
-              </h2>
-              {order.cancellation ? (
-                <div className="mt-2 space-y-1 text-sm">
-                  <p>السبب: {order.cancellation.reasonLabel}</p>
-                  {order.cancellation.note ? (
-                    <p>ملاحظات: {order.cancellation.note}</p>
+            <section className="rounded-3xl border border-red-200 bg-red-50 p-5 text-red-800">
+              <div className="flex items-start gap-3">
+                <span className="inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-white text-red-600">
+                  <StatusIcon status="cancelled" />
+                </span>
+                <div>
+                  <h2 className="font-bold">
+                    {order.cancellation ? "تم إلغاء طلبك" : "تم إلغاء الطلب"}
+                  </h2>
+                  {order.cancellation ? (
+                    <div className="mt-2 space-y-1 text-sm leading-7">
+                      <p>السبب: {order.cancellation.reasonLabel}</p>
+                      {order.cancellation.note ? (
+                        <p>ملاحظات: {order.cancellation.note}</p>
+                      ) : null}
+                      <p>{CANCELLATION_CONTACT_MESSAGE}</p>
+                    </div>
                   ) : null}
-                  <p>{CANCELLATION_CONTACT_MESSAGE}</p>
                 </div>
-              ) : null}
+              </div>
             </section>
           ) : null}
 
-          <section className="rounded-2xl border border-black/10 p-5 dark:border-white/15">
-            <h2 className="font-bold">حالة الطلب</h2>
-            <ol className="mt-4">
+          <section className="rounded-3xl border border-brand-line bg-white p-5 shadow-sm shadow-brand-ink/5">
+            <h2 className="font-extrabold">حالة الطلب</h2>
+            <ol className="mt-5">
               {order.statusHistory.map((event, index) => {
                 const isLast = index === order.statusHistory.length - 1;
 
                 return (
                   <li
                     key={`${event.status}-${index}`}
-                    className="relative flex gap-3 pb-5 last:pb-0"
+                    className="relative flex gap-3 pb-6 last:pb-0"
                   >
                     {!isLast ? (
-                      <span className="absolute top-4 bottom-0 right-2 w-px bg-black/10 dark:bg-white/15" />
+                      <span
+                        className="absolute top-12 bottom-0 right-5 w-px bg-brand-line"
+                        aria-hidden="true"
+                      />
                     ) : null}
                     <span
-                      className="relative mt-1 h-4 w-4 shrink-0 rounded-full border-2 border-foreground bg-background"
-                      aria-hidden="true"
-                    />
-                    <div>
-                      <p className="font-medium">{event.label}</p>
-                      <p className="text-xs text-zinc-600 dark:text-zinc-400">
+                      className={`relative z-10 inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-full ${statusIconClass(event.status)}`}
+                    >
+                      <StatusIcon status={event.status} />
+                    </span>
+                    <div className="pt-1">
+                      <p className="font-semibold">{event.label}</p>
+                      <p className="mt-0.5 text-xs text-brand-muted">
                         {formatDateTime(event.createdAt)}
                       </p>
                     </div>
@@ -238,8 +339,8 @@ export default function TrackView() {
             </ol>
           </section>
 
-          <section className="rounded-2xl border border-black/10 p-5 dark:border-white/15">
-            <h2 className="font-bold">منتجات الطلب</h2>
+          <section className="rounded-3xl border border-brand-line bg-white p-5 shadow-sm shadow-brand-ink/5">
+            <h2 className="font-extrabold">منتجات الطلب</h2>
             <ul className="mt-3 space-y-3 text-sm">
               {order.items.map((item, index) => (
                 <li
@@ -247,44 +348,51 @@ export default function TrackView() {
                   className="flex items-start justify-between gap-3"
                 >
                   <div>
-                    <p className="font-medium">{item.name}</p>
-                    <p className="text-xs text-zinc-600 dark:text-zinc-400">
+                    <p className="font-semibold">{item.name}</p>
+                    <p className="text-xs text-brand-muted">
                       الكمية: {item.quantity} — سعر الوحدة:{" "}
                       {piastresToEgp(item.unitPrice)} ج.م
                     </p>
                   </div>
-                  <span className="shrink-0 font-medium">
+                  <span className="shrink-0 font-semibold">
                     {piastresToEgp(item.lineTotal)} ج.م
                   </span>
                 </li>
               ))}
             </ul>
 
-            <div className="mt-4 space-y-2 border-t border-black/10 pt-4 text-sm dark:border-white/15">
+            <div className="mt-4 space-y-2 border-t border-brand-line pt-4 text-sm">
               <div className="flex justify-between gap-3">
-                <span>المجموع الفرعي</span>
+                <span className="text-brand-muted">المجموع الفرعي</span>
                 <span>{piastresToEgp(order.subtotal)} ج.م</span>
               </div>
               <div className="flex justify-between gap-3">
-                <span>رسوم التوصيل</span>
+                <span className="text-brand-muted">رسوم التوصيل</span>
                 <span>{piastresToEgp(order.deliveryFee)} ج.م</span>
               </div>
-              <div className="flex justify-between gap-3 font-bold">
+              <div className="flex justify-between gap-3 text-base font-bold">
                 <span>الإجمالي</span>
-                <span>{piastresToEgp(order.totalAmount)} ج.م</span>
+                <span className="text-brand-wine">
+                  {piastresToEgp(order.totalAmount)} ج.م
+                </span>
               </div>
             </div>
           </section>
 
-          <section className="rounded-2xl border border-black/10 p-5 text-sm dark:border-white/15">
-            <h2 className="font-bold">الدفع والتوصيل</h2>
-            <div className="mt-3 space-y-2">
+          <section className="rounded-3xl border border-brand-line bg-white p-5 text-sm shadow-sm shadow-brand-ink/5">
+            <h2 className="font-extrabold">الدفع والتوصيل</h2>
+            <div className="mt-3 space-y-2 leading-7 text-brand-muted">
               <p>
-                طريقة الدفع: <span className="font-medium">{order.paymentMethodLabel}</span>
+                طريقة الدفع:{" "}
+                <span className="font-semibold text-brand-ink">
+                  {order.paymentMethodLabel}
+                </span>
               </p>
               <p>
                 حالة الدفع:{" "}
-                <span className="font-medium">{order.paymentStatusLabel}</span>
+                <span className="font-semibold text-brand-ink">
+                  {order.paymentStatusLabel}
+                </span>
               </p>
               <p>
                 العنوان: {order.shippingAddress.city} —{" "}

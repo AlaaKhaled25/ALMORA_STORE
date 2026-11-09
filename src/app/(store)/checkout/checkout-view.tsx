@@ -8,8 +8,11 @@ import {
   useSyncExternalStore,
   type FormEvent,
 } from "react";
+import CheckoutSteps from "@/components/store/checkout-steps";
+import CopyOrderButton from "@/components/store/copy-order-button";
 import { useCartValidation } from "@/components/store/use-cart-validation";
 import type { ApiErrorDetail } from "@/lib/api-errors";
+import { DELIVERY_FEE_LABEL } from "@/lib/brand";
 import {
   clearCart,
   getCartSnapshot,
@@ -74,7 +77,10 @@ function readApiError(body: unknown): ApiErrorBody {
 }
 
 const inputClass =
-  "w-full rounded-xl border border-black/15 bg-transparent px-3 py-2 text-sm outline-none focus:border-foreground dark:border-white/20";
+  "h-12 w-full rounded-2xl border border-brand-line bg-brand-cream/50 px-4 text-sm outline-none transition placeholder:text-brand-muted/60 focus:border-brand-wine focus:ring-4 focus:ring-brand-wine/10";
+const textareaClass =
+  "w-full rounded-2xl border border-brand-line bg-brand-cream/50 px-4 py-3 text-sm outline-none transition placeholder:text-brand-muted/60 focus:border-brand-wine focus:ring-4 focus:ring-brand-wine/10";
+const errorInputClass = "border-brand-danger focus:border-brand-danger";
 
 export default function CheckoutView() {
   const cartSnapshot = useSyncExternalStore(
@@ -118,7 +124,10 @@ export default function CheckoutView() {
   }
 
   function getIdempotencyKey(signature: string): string {
-    if (!idempotencyRef.current || idempotencyRef.current.signature !== signature) {
+    if (
+      !idempotencyRef.current ||
+      idempotencyRef.current.signature !== signature
+    ) {
       idempotencyRef.current = {
         signature,
         key: crypto.randomUUID(),
@@ -198,76 +207,112 @@ export default function CheckoutView() {
 
   if (success) {
     return (
-      <div className="mx-auto max-w-3xl px-4 py-10 sm:px-6">
-        <div className="rounded-3xl border border-green-200 bg-green-50 p-6 text-green-900 sm:p-8 dark:border-green-900 dark:bg-green-950/40 dark:text-green-200">
-          <p className="text-sm font-medium">تم إنشاء الطلب بنجاح.</p>
-          <h1 className="mt-2 text-2xl font-bold">
-            رقم الطلب: <span dir="ltr">{success.orderNumber}</span>
-          </h1>
-          <p className="mt-2 text-sm">
-            الدفع عند الاستلام. سنتواصل معك لتأكيد الطلب.
-          </p>
+      <div className="mx-auto max-w-3xl px-4 py-6 sm:px-6 sm:py-10">
+        <CheckoutSteps current={3} />
 
-          <div className="mt-6 rounded-2xl bg-white/70 p-4 text-foreground dark:bg-black/20">
-            <h2 className="font-bold">تفاصيل الطلب</h2>
-            <ul className="mt-3 space-y-2 text-sm">
-              {success.items.map((item) => (
-                <li
-                  key={item.productId}
-                  className="flex items-center justify-between gap-3"
-                >
-                  <span>
-                    {item.productNameSnapshot} × {item.quantity}
-                  </span>
-                  <span className="font-medium">
-                    {piastresToEgp(item.lineTotal)} ج.م
-                  </span>
-                </li>
-              ))}
-            </ul>
-
-            <div className="mt-4 space-y-2 border-t border-black/10 pt-3 text-sm dark:border-white/15">
-              <div className="flex justify-between gap-3">
-                <span>المجموع الفرعي</span>
-                <span>{piastresToEgp(success.subtotal)} ج.م</span>
-              </div>
-              <div className="flex justify-between gap-3">
-                <span>رسوم التوصيل</span>
-                <span>{piastresToEgp(success.deliveryFee)} ج.م</span>
-              </div>
-              <div className="flex justify-between gap-3 font-bold">
-                <span>الإجمالي</span>
-                <span>{piastresToEgp(success.totalAmount)} ج.م</span>
-              </div>
-            </div>
-
-            <div className="mt-4 border-t border-black/10 pt-3 text-sm dark:border-white/15">
-              <p className="font-medium">{success.recipientName}</p>
-              <p dir="ltr" className="text-start">
-                {success.recipientPhone}
-              </p>
-              <p>
-                {success.shippingAddress.city} —{" "}
-                {success.shippingAddress.addressLine}
-              </p>
-              {success.shippingAddress.notes ? (
-                <p className="text-zinc-600 dark:text-zinc-400">
-                  ملاحظات: {success.shippingAddress.notes}
-                </p>
-              ) : null}
-            </div>
+        <div className="mt-5 overflow-hidden rounded-[2rem] border border-brand-success/20 bg-white shadow-xl shadow-brand-success/5">
+          <div className="bg-gradient-to-b from-brand-success/10 to-transparent p-6 text-center sm:p-8">
+            <span className="mx-auto inline-flex h-20 w-20 items-center justify-center rounded-full bg-brand-success text-white shadow-lg shadow-brand-success/20">
+              <svg
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                className="h-9 w-9"
+                aria-hidden="true"
+              >
+                <path d="m5 12 4 4L19 6" />
+              </svg>
+            </span>
+            <p className="mt-5 text-sm font-semibold text-brand-success">
+              تم إنشاء الطلب بنجاح
+            </p>
+            <h1 className="mt-1 text-2xl font-extrabold sm:text-3xl">
+              شكرًا لك، وصلنا طلبك.
+            </h1>
+            <p className="mt-2 text-sm leading-7 text-brand-muted">
+              سنتواصل معك لتأكيد الطلب. الدفع عند الاستلام.
+            </p>
           </div>
 
-          <div className="mt-6 flex flex-wrap gap-3">
-            <Link
-              href="/track"
-              className="inline-block rounded-full bg-foreground px-6 py-3 text-sm font-medium text-background"
-            >
-              تتبع طلبك
-            </Link>
+          <div className="px-5 pb-6 sm:px-8 sm:pb-8">
+            <div className="rounded-2xl border border-brand-line bg-brand-cream/70 p-4 text-center">
+              <p className="text-xs font-semibold text-brand-muted">رقم الطلب</p>
+              <p
+                dir="ltr"
+                className="mt-1 text-2xl font-extrabold tracking-wide text-brand-wine"
+              >
+                {success.orderNumber}
+              </p>
+            </div>
+
+            <div className="mt-4 flex flex-wrap justify-center gap-3">
+              <CopyOrderButton orderNumber={success.orderNumber} />
+              <Link
+                href="/track"
+                className="inline-flex min-h-11 items-center justify-center rounded-full bg-brand-wine px-6 text-sm font-semibold text-white transition hover:bg-brand-wine-dark"
+              >
+                تتبع طلبك
+              </Link>
+            </div>
+
+            <div className="mt-6 rounded-2xl border border-brand-line p-4 sm:p-5">
+              <h2 className="font-bold">تفاصيل الطلب</h2>
+              <ul className="mt-3 space-y-2 text-sm">
+                {success.items.map((item) => (
+                  <li
+                    key={item.productId}
+                    className="flex items-center justify-between gap-3"
+                  >
+                    <span>
+                      {item.productNameSnapshot} × {item.quantity}
+                    </span>
+                    <span className="font-semibold">
+                      {piastresToEgp(item.lineTotal)} ج.م
+                    </span>
+                  </li>
+                ))}
+              </ul>
+
+              <div className="mt-4 space-y-2 border-t border-brand-line pt-3 text-sm">
+                <div className="flex justify-between gap-3">
+                  <span className="text-brand-muted">المجموع الفرعي</span>
+                  <span>{piastresToEgp(success.subtotal)} ج.م</span>
+                </div>
+                <div className="flex justify-between gap-3">
+                  <span className="text-brand-muted">رسوم التوصيل</span>
+                  <span>{piastresToEgp(success.deliveryFee)} ج.م</span>
+                </div>
+                <div className="flex justify-between gap-3 text-base font-bold">
+                  <span>الإجمالي</span>
+                  <span className="text-brand-wine">
+                    {piastresToEgp(success.totalAmount)} ج.م
+                  </span>
+                </div>
+              </div>
+
+              <div className="mt-4 border-t border-brand-line pt-3 text-sm">
+                <p className="font-semibold">{success.recipientName}</p>
+                <p dir="ltr" className="text-start text-brand-muted">
+                  {success.recipientPhone}
+                </p>
+                <p className="text-brand-muted">
+                  {success.shippingAddress.city} —{" "}
+                  {success.shippingAddress.addressLine}
+                </p>
+                {success.shippingAddress.notes ? (
+                  <p className="text-brand-muted">
+                    ملاحظات: {success.shippingAddress.notes}
+                  </p>
+                ) : null}
+              </div>
+            </div>
+
             <Link
               href="/products"
-              className="inline-block rounded-full border border-black/15 px-6 py-3 text-sm font-medium dark:border-white/20"
+              className="mt-4 inline-flex min-h-11 items-center text-sm font-semibold text-brand-wine hover:underline"
             >
               متابعة التسوق
             </Link>
@@ -279,15 +324,34 @@ export default function CheckoutView() {
 
   if (items.length === 0) {
     return (
-      <div className="mx-auto max-w-3xl px-4 py-10 sm:px-6">
-        <div className="rounded-3xl border border-black/10 p-8 text-center dark:border-white/15">
-          <h1 className="text-2xl font-bold">السلة فارغة</h1>
-          <p className="mt-2 text-sm text-zinc-600 dark:text-zinc-400">
+      <div className="mx-auto max-w-3xl px-4 py-6 sm:px-6 sm:py-10">
+        <CheckoutSteps current={2} />
+
+        <div className="mt-5 rounded-[2rem] border border-brand-line bg-white p-8 text-center sm:p-12">
+          <span className="mx-auto inline-flex h-20 w-20 items-center justify-center rounded-full bg-brand-wine-soft text-brand-wine">
+            <svg
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="1.6"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              className="h-9 w-9"
+              aria-hidden="true"
+            >
+              <path d="M6 8h12l1 12H5L6 8Z" />
+              <path d="M9 8a3 3 0 0 1 6 0" />
+            </svg>
+          </span>
+          <h1 className="mt-5 text-2xl font-extrabold sm:text-3xl">
+            السلة فارغة
+          </h1>
+          <p className="mt-2 text-sm leading-7 text-brand-muted">
             أضف منتجات إلى السلة قبل إتمام الطلب.
           </p>
           <Link
             href="/products"
-            className="mt-5 inline-block rounded-full bg-foreground px-6 py-3 text-sm font-medium text-background"
+            className="mt-6 inline-flex min-h-12 items-center justify-center rounded-full bg-brand-wine px-7 text-sm font-semibold text-white transition hover:bg-brand-wine-dark"
           >
             تصفح المنتجات
           </Link>
@@ -297,22 +361,28 @@ export default function CheckoutView() {
   }
 
   return (
-    <div className="mx-auto max-w-6xl px-4 py-8 sm:px-6">
-      <h1 className="text-2xl font-bold sm:text-3xl">إتمام الطلب</h1>
-      <p className="mt-1 text-sm text-zinc-600 dark:text-zinc-400">
-        الدفع عند الاستلام. أدخل بيانات التوصيل بالأسفل.
-      </p>
+    <div className="mx-auto max-w-6xl px-4 py-6 sm:px-6 sm:py-10">
+      <CheckoutSteps current={2} />
 
-      <div className="mt-6 grid gap-6 lg:grid-cols-[1fr_340px]">
+      <div className="mt-5">
+        <h1 className="text-3xl font-extrabold sm:text-4xl">إتمام الطلب</h1>
+        <p className="mt-1 text-sm text-brand-muted">
+          أدخل بيانات التوصيل بالأسفل. الدفع عند الاستلام.
+        </p>
+      </div>
+
+      <div className="mt-6 grid gap-6 lg:grid-cols-[1fr_360px]">
         <form
           onSubmit={handleSubmit}
-          className="rounded-2xl border border-black/10 p-5 dark:border-white/15"
+          className="rounded-3xl border border-brand-line bg-white p-5 shadow-sm shadow-brand-ink/5 sm:p-6"
         >
-          <h2 className="text-lg font-bold">بيانات التوصيل</h2>
+          <h2 className="text-lg font-extrabold">بيانات التوصيل</h2>
 
           <div className="mt-4 space-y-4">
-            <label className="block space-y-1 text-sm">
-              <span className="font-medium">الاسم الكامل</span>
+            <label className="block space-y-1.5 text-sm">
+              <span className="font-semibold">
+                الاسم الكامل <span className="text-brand-danger">*</span>
+              </span>
               <input
                 type="text"
                 value={form.recipientName}
@@ -320,17 +390,28 @@ export default function CheckoutView() {
                   updateField("recipientName", event.target.value)
                 }
                 autoComplete="name"
-                className={inputClass}
+                aria-invalid={!!fieldError("recipientName")}
+                aria-describedby={
+                  fieldError("recipientName") ? "recipientName-error" : undefined
+                }
+                className={`${inputClass} ${
+                  fieldError("recipientName") ? errorInputClass : ""
+                }`}
               />
               {fieldError("recipientName") ? (
-                <span className="block text-xs text-red-600 dark:text-red-400">
+                <span
+                  id="recipientName-error"
+                  className="block text-xs text-brand-danger"
+                >
                   {fieldError("recipientName")}
                 </span>
               ) : null}
             </label>
 
-            <label className="block space-y-1 text-sm">
-              <span className="font-medium">رقم الهاتف</span>
+            <label className="block space-y-1.5 text-sm">
+              <span className="font-semibold">
+                رقم الهاتف <span className="text-brand-danger">*</span>
+              </span>
               <input
                 type="tel"
                 inputMode="tel"
@@ -341,33 +422,54 @@ export default function CheckoutView() {
                 autoComplete="tel"
                 placeholder="01012345678"
                 dir="ltr"
-                className={`${inputClass} text-start`}
+                aria-invalid={!!fieldError("recipientPhone")}
+                aria-describedby={
+                  fieldError("recipientPhone")
+                    ? "recipientPhone-error"
+                    : undefined
+                }
+                className={`${inputClass} text-start ${
+                  fieldError("recipientPhone") ? errorInputClass : ""
+                }`}
               />
               {fieldError("recipientPhone") ? (
-                <span className="block text-xs text-red-600 dark:text-red-400">
+                <span
+                  id="recipientPhone-error"
+                  className="block text-xs text-brand-danger"
+                >
                   {fieldError("recipientPhone")}
                 </span>
               ) : null}
             </label>
 
-            <label className="block space-y-1 text-sm">
-              <span className="font-medium">المحافظة / المدينة</span>
+            <label className="block space-y-1.5 text-sm">
+              <span className="font-semibold">
+                المحافظة / المدينة <span className="text-brand-danger">*</span>
+              </span>
               <input
                 type="text"
                 value={form.city}
                 onChange={(event) => updateField("city", event.target.value)}
                 autoComplete="address-level1"
-                className={inputClass}
+                aria-invalid={!!fieldError("city")}
+                aria-describedby={
+                  fieldError("city") ? "city-error" : undefined
+                }
+                className={`${inputClass} ${
+                  fieldError("city") ? errorInputClass : ""
+                }`}
               />
               {fieldError("city") ? (
-                <span className="block text-xs text-red-600 dark:text-red-400">
+                <span id="city-error" className="block text-xs text-brand-danger">
                   {fieldError("city")}
                 </span>
               ) : null}
             </label>
 
-            <label className="block space-y-1 text-sm">
-              <span className="font-medium">العنوان بالتفصيل</span>
+            <label className="block space-y-1.5 text-sm">
+              <span className="font-semibold">
+                العنوان بالتفصيل <span className="text-brand-danger">*</span>
+              </span>
               <textarea
                 value={form.addressLine}
                 onChange={(event) =>
@@ -375,25 +477,43 @@ export default function CheckoutView() {
                 }
                 autoComplete="street-address"
                 rows={3}
-                className={inputClass}
+                aria-invalid={!!fieldError("addressLine")}
+                aria-describedby={
+                  fieldError("addressLine") ? "addressLine-error" : undefined
+                }
+                className={`${textareaClass} ${
+                  fieldError("addressLine") ? errorInputClass : ""
+                }`}
               />
               {fieldError("addressLine") ? (
-                <span className="block text-xs text-red-600 dark:text-red-400">
+                <span
+                  id="addressLine-error"
+                  className="block text-xs text-brand-danger"
+                >
                   {fieldError("addressLine")}
                 </span>
               ) : null}
             </label>
 
-            <label className="block space-y-1 text-sm">
-              <span className="font-medium">ملاحظات إضافية (اختياري)</span>
+            <label className="block space-y-1.5 text-sm">
+              <span className="font-semibold">ملاحظات إضافية (اختياري)</span>
               <textarea
                 value={form.notes}
                 onChange={(event) => updateField("notes", event.target.value)}
                 rows={2}
-                className={inputClass}
+                aria-invalid={!!fieldError("notes")}
+                aria-describedby={
+                  fieldError("notes") ? "notes-error" : undefined
+                }
+                className={`${textareaClass} ${
+                  fieldError("notes") ? errorInputClass : ""
+                }`}
               />
               {fieldError("notes") ? (
-                <span className="block text-xs text-red-600 dark:text-red-400">
+                <span
+                  id="notes-error"
+                  className="block text-xs text-brand-danger"
+                >
                   {fieldError("notes")}
                 </span>
               ) : null}
@@ -403,34 +523,36 @@ export default function CheckoutView() {
           {submitError ? (
             <p
               aria-live="polite"
-              className="mt-4 rounded-xl bg-red-50 p-3 text-sm text-red-700 dark:bg-red-950/40 dark:text-red-300"
+              className="mt-4 rounded-xl bg-brand-danger/5 p-3 text-sm text-brand-danger"
             >
               {submitError}
             </p>
           ) : null}
 
+          <div className="mt-5 rounded-2xl bg-brand-wine-soft p-4 text-sm leading-7 text-brand-muted">
+            <span className="font-bold text-brand-ink">الدفع عند الاستلام.</span>{" "}
+            لن تدفع الآن. رسوم التوصيل {DELIVERY_FEE_LABEL} وتظهر في ملخص الطلب.
+          </div>
+
           <button
             type="submit"
             disabled={!canSubmit || !!error}
-            className="mt-5 w-full rounded-full bg-foreground px-6 py-3 font-medium text-background transition-opacity hover:opacity-90 disabled:cursor-not-allowed disabled:bg-zinc-200 disabled:text-zinc-500 dark:disabled:bg-zinc-800 dark:disabled:text-zinc-400"
+            className="mt-5 min-h-12 w-full rounded-full bg-brand-wine px-6 font-semibold text-white transition hover:bg-brand-wine-dark disabled:cursor-not-allowed disabled:bg-brand-sand disabled:text-brand-muted"
           >
-            {submitting ? "جارٍ إرسال الطلب..." : "تأكيد الطلب (الدفع عند الاستلام)"}
+            {submitting ? "جارٍ إرسال الطلب..." : "تأكيد الطلب"}
           </button>
         </form>
 
-        <aside className="h-fit rounded-2xl border border-black/10 p-5 dark:border-white/15">
-          <h2 className="text-lg font-bold">ملخص الطلب</h2>
+        <aside className="h-fit rounded-3xl border border-brand-line bg-white p-5 shadow-sm shadow-brand-ink/5 lg:sticky lg:top-40">
+          <h2 className="text-lg font-extrabold">ملخص الطلب</h2>
 
           <ul className="mt-4 space-y-3 text-sm">
             {items.map((item) => {
               const info = validationById.get(item.productId);
 
               return (
-                <li
-                  key={item.productId}
-                  className="flex items-center gap-3"
-                >
-                  <div className="relative h-12 w-12 shrink-0 overflow-hidden rounded-lg bg-zinc-100 dark:bg-zinc-900">
+                <li key={item.productId} className="flex items-center gap-3">
+                  <div className="relative h-12 w-12 shrink-0 overflow-hidden rounded-xl bg-brand-sand">
                     {info?.imageUrl ? (
                       <Image
                         src={info.imageUrl}
@@ -440,18 +562,22 @@ export default function CheckoutView() {
                         sizes="48px"
                         className="h-full w-full object-cover"
                       />
-                    ) : null}
+                    ) : (
+                      <span className="flex h-full items-center justify-center text-[10px] text-brand-muted">
+                        لا صورة
+                      </span>
+                    )}
                   </div>
                   <div className="min-w-0 flex-1">
-                    <p className="truncate font-medium">
+                    <p className="truncate font-semibold">
                       {info?.name || "جارٍ التحقق..."}
                     </p>
-                    <p className="text-xs text-zinc-600 dark:text-zinc-400">
+                    <p className="text-xs text-brand-muted">
                       الكمية: {item.quantity}
                     </p>
                   </div>
                   {info ? (
-                    <span className="shrink-0 font-medium">
+                    <span className="shrink-0 font-semibold">
                       {piastresToEgp(info.price * item.quantity)} ج.م
                     </span>
                   ) : null}
@@ -461,27 +587,25 @@ export default function CheckoutView() {
           </ul>
 
           {priceChanges.length > 0 ? (
-            <p className="mt-4 rounded-xl bg-amber-50 p-3 text-xs text-amber-800 dark:bg-amber-950/40 dark:text-amber-300">
+            <p className="mt-4 rounded-xl bg-brand-warning/10 p-3 text-xs leading-6 text-brand-warning">
               تغيّرت أسعار بعض المنتجات. تم تحديث الإجمالي بالأسعار الحالية.
             </p>
           ) : null}
 
-          <div className="mt-4 space-y-3 border-t border-black/10 pt-4 text-sm dark:border-white/15">
+          <div className="mt-4 space-y-3 border-t border-brand-line pt-4 text-sm">
             <div className="flex items-center justify-between gap-3">
-              <span className="text-zinc-600 dark:text-zinc-400">
-                المجموع الفرعي
-              </span>
-              <span className="font-medium">
-                {validation
-                  ? `${piastresToEgp(validation.subtotal)} ج.م`
-                  : "..."}
+              <span className="text-brand-muted">المجموع الفرعي</span>
+              <span className="font-semibold">
+                {validation ? (
+                  `${piastresToEgp(validation.subtotal)} ج.م`
+                ) : (
+                  <span className="inline-block h-4 w-16 animate-pulse rounded-full bg-brand-sand" />
+                )}
               </span>
             </div>
             <div className="flex items-center justify-between gap-3">
-              <span className="text-zinc-600 dark:text-zinc-400">
-                رسوم التوصيل
-              </span>
-              <span className="font-medium">
+              <span className="text-brand-muted">رسوم التوصيل</span>
+              <span className="font-semibold">
                 {piastresToEgp(
                   validation?.deliveryFee ?? DELIVERY_FEE_PIASTRES,
                 )}{" "}
@@ -490,25 +614,30 @@ export default function CheckoutView() {
             </div>
             <div className="flex items-center justify-between gap-3 text-base font-bold">
               <span>الإجمالي</span>
-              <span>
-                {validation ? `${piastresToEgp(validation.total)} ج.م` : "..."}
+              <span className="text-brand-wine">
+                {validation ? (
+                  `${piastresToEgp(validation.total)} ج.م`
+                ) : (
+                  <span className="inline-block h-5 w-20 animate-pulse rounded-full bg-brand-sand" />
+                )}
               </span>
             </div>
           </div>
 
           {loading ? (
-            <p className="mt-4 text-xs text-zinc-600 dark:text-zinc-400">
-              جارٍ التحقق من الأسعار والمخزون...
-            </p>
+            <div className="mt-4 space-y-2" aria-hidden="true">
+              <div className="h-3 w-2/3 animate-pulse rounded-full bg-brand-sand" />
+              <div className="h-3 w-1/2 animate-pulse rounded-full bg-brand-sand" />
+            </div>
           ) : null}
 
           {error ? (
-            <div className="mt-4 rounded-xl bg-red-50 p-3 text-xs text-red-700 dark:bg-red-950/40 dark:text-red-300">
+            <div className="mt-4 rounded-xl bg-brand-danger/5 p-3 text-xs text-brand-danger">
               <p>{error}</p>
               <button
                 type="button"
                 onClick={() => setRefreshToken((value) => value + 1)}
-                className="mt-2 font-medium underline"
+                className="mt-2 font-semibold underline"
               >
                 إعادة المحاولة
               </button>
@@ -516,14 +645,14 @@ export default function CheckoutView() {
           ) : null}
 
           {validation?.hasIssues ? (
-            <p className="mt-4 rounded-xl bg-amber-50 p-3 text-xs text-amber-800 dark:bg-amber-950/40 dark:text-amber-300">
+            <p className="mt-4 rounded-xl bg-brand-warning/10 p-3 text-xs leading-6 text-brand-warning">
               بعض المنتجات غير متاحة بالكمية المطلوبة. عدّل السلة قبل إتمام
               الطلب.
             </p>
           ) : null}
 
-          <p className="mt-4 text-center text-xs text-zinc-500 dark:text-zinc-400">
-            الدفع عند الاستلام.
+          <p className="mt-4 text-center text-xs text-brand-muted">
+            الدفع عند الاستلام · {DELIVERY_FEE_LABEL} رسوم توصيل.
           </p>
         </aside>
       </div>

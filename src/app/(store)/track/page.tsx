@@ -5,7 +5,7 @@ import TrackView from "./track-view";
 export const instant = false;
 
 export const metadata: Metadata = {
-  title: "تتبع طلبك | متجري",
+  title: "تتبع طلبك",
   description: "تتبع حالة طلبك باستخدام رقم الطلب ورقم الهاتف.",
 };
 

@@ -1,7 +1,7 @@
 "use client";
 
-import Link from "next/link";
-import { useSyncExternalStore } from "react";
+import { useEffect, useRef, useState, useSyncExternalStore } from "react";
+import { useStoreUI } from "@/components/store/store-ui-provider";
 import {
   getCartCountSnapshot,
   subscribeCart,
@@ -10,18 +10,41 @@ import {
 const getServerCount = () => 0;
 
 export default function CartLink({ className = "" }: { className?: string }) {
+  const { openCartDrawer } = useStoreUI();
   const count = useSyncExternalStore(
     subscribeCart,
     getCartCountSnapshot,
     getServerCount,
   );
+  const previousCountRef = useRef(count);
+  const hasMountedRef = useRef(false);
+  const [bump, setBump] = useState(false);
+
+  useEffect(() => {
+    if (!hasMountedRef.current) {
+      hasMountedRef.current = true;
+      previousCountRef.current = count;
+      return;
+    }
+
+    if (count <= previousCountRef.current) {
+      previousCountRef.current = count;
+      return;
+    }
+
+    previousCountRef.current = count;
+    setBump(true);
+    const timer = setTimeout(() => setBump(false), 450);
+    return () => clearTimeout(timer);
+  }, [count]);
 
   return (
-    <Link
-      href="/cart"
-      aria-label={`السلة (${count})`}
+    <button
+      type="button"
+      onClick={openCartDrawer}
+      aria-label={`فتح السلة (${count} قطعة)`}
       title="السلة"
-      className={`relative inline-flex h-10 w-10 items-center justify-center rounded-full border border-black/10 text-zinc-600 transition-colors hover:bg-black/5 dark:border-white/15 dark:text-zinc-300 dark:hover:bg-white/10 ${className}`}
+      className={`relative inline-flex h-11 w-11 items-center justify-center rounded-full border border-brand-line bg-white/80 text-brand-ink transition hover:border-brand-wine/30 hover:bg-brand-wine-soft focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-wine ${bump ? "animate-cart-bump" : ""} ${className}`}
     >
       <svg
         viewBox="0 0 24 24"
@@ -39,10 +62,10 @@ export default function CartLink({ className = "" }: { className?: string }) {
       </svg>
 
       {count > 0 ? (
-        <span className="absolute -top-1 -left-1 inline-flex min-w-5 items-center justify-center rounded-full bg-foreground px-1 text-[11px] font-bold leading-5 text-background">
+        <span className="absolute -top-1 -left-1 inline-flex min-w-5 items-center justify-center rounded-full bg-brand-wine px-1 text-[11px] font-bold leading-5 text-white shadow-sm">
           {count > 99 ? "99+" : count}
         </span>
       ) : null}
-    </Link>
+    </button>
   );
 }

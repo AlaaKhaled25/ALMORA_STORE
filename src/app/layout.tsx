@@ -1,6 +1,8 @@
+import type { CSSProperties } from "react";
 import type { Metadata, Viewport } from "next";
 import { Cairo } from "next/font/google";
 import RegisterServiceWorker from "@/components/pwa/register-service-worker";
+import { BRAND, BRAND_CSS_VARIABLES } from "@/lib/brand";
 import "./globals.css";
 
 const cairo = Cairo({
@@ -10,18 +12,24 @@ const cairo = Cairo({
 });
 
 export const metadata: Metadata = {
-  title: "متجري",
-  description: "متجر إلكتروني بسيط — الدفع عند الاستلام",
+  title: BRAND.name,
+  description: BRAND.description,
+  applicationName: BRAND.name,
 };
 
 export const viewport: Viewport = {
-  themeColor: "#171717",
+  themeColor: BRAND.colors.wine,
 };
 
 export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
-    <html lang="ar" dir="rtl" className={`${cairo.variable} h-full antialiased`}>
-      <body className="min-h-full flex flex-col bg-background text-foreground">
+    <html
+      lang="ar"
+      dir="rtl"
+      className={`${cairo.variable} h-full antialiased`}
+      style={BRAND_CSS_VARIABLES as CSSProperties}
+    >
+      <body className="flex min-h-full flex-col bg-background text-foreground">
         {children}
         <RegisterServiceWorker />
       </body>

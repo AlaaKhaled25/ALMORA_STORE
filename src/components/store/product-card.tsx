@@ -10,46 +10,53 @@ export default function ProductCard({ product }: { product: StoreProduct }) {
   const isOutOfStock = product.availability === "غير متوفر";
 
   return (
-    <div className="group flex flex-col overflow-hidden rounded-2xl border border-black/10 bg-white/60 transition hover:shadow-md dark:border-white/15 dark:bg-white/5">
+    <article className="group flex flex-col overflow-hidden rounded-3xl border border-brand-line bg-white transition duration-300 hover:-translate-y-1 hover:border-brand-wine/20 hover:shadow-xl hover:shadow-brand-ink/10">
       <Link
         href={`/products/${product.id}`}
-        className="flex flex-1 flex-col"
+        className="flex flex-1 flex-col focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-brand-wine"
       >
-        <div className="relative aspect-square overflow-hidden bg-zinc-100 dark:bg-zinc-900">
+        <div className="relative aspect-[4/5] overflow-hidden bg-brand-sand">
           {mainImage ? (
             <Image
               src={mainImage.url}
               alt={product.name}
-              width={600}
-              height={600}
+              width={700}
+              height={875}
               sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw"
-              className="h-full w-full object-cover transition duration-300 group-hover:scale-105"
+              className="h-full w-full object-cover transition duration-700 ease-out group-hover:scale-110"
             />
           ) : (
-            <div className="flex h-full items-center justify-center text-sm text-zinc-500">
+            <div className="flex h-full items-center justify-center text-sm text-brand-muted">
               لا صورة
             </div>
           )}
 
+          <div className="absolute inset-x-0 top-0 flex items-start justify-between gap-2 bg-gradient-to-b from-black/25 to-transparent p-3">
+            <AvailabilityBadge availability={product.availability} />
+          </div>
+
           {isOutOfStock ? (
-            <span className="absolute inset-x-0 bottom-0 bg-black/70 py-1 text-center text-xs text-white">
+            <span className="absolute inset-x-0 bottom-0 bg-brand-ink/80 py-2 text-center text-xs font-semibold text-white backdrop-blur-sm">
               غير متوفر
             </span>
           ) : null}
         </div>
 
         <div className="p-4 pb-2">
-          <h3 className="line-clamp-2 font-semibold">{product.name}</h3>
-          <div className="mt-2 flex items-center justify-between gap-2">
-            <span className="font-bold">
-              {piastresToEgp(product.price)} ج.م
-            </span>
-            <AvailabilityBadge availability={product.availability} />
-          </div>
+          <p className="text-[11px] font-semibold text-brand-muted">
+            {product.categoryName}
+          </p>
+          <h3 className="mt-1 line-clamp-2 min-h-14 text-base font-bold leading-7 transition-colors group-hover:text-brand-wine">
+            {product.name}
+          </h3>
+          <p className="mt-3 text-lg font-extrabold text-brand-wine">
+            {piastresToEgp(product.price)}{" "}
+            <span className="text-xs font-semibold">ج.م</span>
+          </p>
         </div>
       </Link>
 
-      <div className="px-4 pb-4 pt-1">
+      <div className="px-4 pb-4 pt-2">
         <AddToCartButton
           productId={product.id}
           price={product.price}
@@ -57,6 +64,6 @@ export default function ProductCard({ product }: { product: StoreProduct }) {
           variant="small"
         />
       </div>
-    </div>
+    </article>
   );
 }

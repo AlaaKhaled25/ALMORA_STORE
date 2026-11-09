@@ -35,34 +35,34 @@ export default function Pagination({
   return (
     <nav
       aria-label="التنقل بين الصفحات"
-      className="mt-8 flex items-center justify-center gap-3 text-sm"
+      className="mt-8 flex flex-wrap items-center justify-center gap-3 text-sm"
     >
       {currentPage > 1 ? (
         <Link
           href={hrefFor(currentPage - 1)}
-          className="rounded-full border border-black/10 px-4 py-2 font-medium hover:bg-black/5 dark:border-white/15 dark:hover:bg-white/10"
+          className="inline-flex min-h-11 items-center rounded-full border border-brand-line bg-white px-5 font-semibold transition hover:border-brand-wine/30 hover:bg-brand-wine-soft"
         >
           السابق
         </Link>
       ) : (
-        <span className="rounded-full border border-black/5 px-4 py-2 text-zinc-400 dark:border-white/10">
+        <span className="inline-flex min-h-11 items-center rounded-full border border-brand-line/60 px-5 text-brand-muted/50">
           السابق
         </span>
       )}
 
-      <span className="text-zinc-600 dark:text-zinc-400">
+      <span className="rounded-full bg-brand-wine-soft px-4 py-2 text-xs font-semibold text-brand-wine">
         صفحة {currentPage} من {totalPages}
       </span>
 
       {currentPage < totalPages ? (
         <Link
           href={hrefFor(currentPage + 1)}
-          className="rounded-full border border-black/10 px-4 py-2 font-medium hover:bg-black/5 dark:border-white/15 dark:hover:bg-white/10"
+          className="inline-flex min-h-11 items-center rounded-full border border-brand-line bg-white px-5 font-semibold transition hover:border-brand-wine/30 hover:bg-brand-wine-soft"
         >
           التالي
         </Link>
       ) : (
-        <span className="rounded-full border border-black/5 px-4 py-2 text-zinc-400 dark:border-white/10">
+        <span className="inline-flex min-h-11 items-center rounded-full border border-brand-line/60 px-5 text-brand-muted/50">
           التالي
         </span>
       )}
